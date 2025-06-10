@@ -1,0 +1,28 @@
+﻿@using System.Web
+@{
+    var user = HttpContext.Current.User;
+    var action = ViewContext.RouteData.Values["action"]?.ToString();
+}
+
+<nav class="sidebar p-3">
+    <h4>Menú</h4>
+    <ul class="nav flex-column">
+        @if (user.IsInRole("Usuario"))
+        {
+            <li><a class="nav-link @(action == "Perfil" ? "active" : "")" href="@Url.Action("Perfil", "Usuario")"><i class="bi bi-person-circle"></i> Perfil</a></li>
+            <li><a class="nav-link @(action == "Tramitar" ? "active" : "")" href="@Url.Action("Tramitar", "Usuario")"><i class="bi bi-file-earmark-text"></i> Tramitar</a></li>
+            <li><a class="nav-link @(action == "Seguimiento" ? "active" : "")" href="@Url.Action("Seguimiento", "Usuario")"><i class="bi bi-clock-history"></i> Seguimiento</a></li>
+        }
+        else if (user.IsInRole("Admin"))
+        {
+            <li><a class="nav-link @(action == "RevisarSolicitudes" ? "active" : "")" href="@Url.Action("RevisarSolicitudes", "Admin")"><i class="bi bi-speedometer2"></i>Solicitudes Pendientes</a></li>
+            <li><a class="nav-link @(action == "MisSolicitudes" ? "active" : "")" href="@Url.Action("MisSolicitudes", "Admin")"><i class="bi bi-list-check"></i>Solicitudes Atendidas</a></li>
+        }
+        else if (user.IsInRole("SuperAdministrador"))
+        {
+            <li><a class="nav-link @(action == "SuperDashboard" ? "active" : "")" href="@Url.Action("SuperDashboard", "SuperAdmin")"><i class="bi bi-shield-lock"></i> Panel SuperAdmin</a></li>
+            <li><a class="nav-link @(action == "Usuarios" ? "active" : "")" href="@Url.Action("Usuarios", "SuperAdmin")"><i class="bi bi-people"></i> Gestión de usuarios</a></li>
+            <li><a class="nav-link @(action == "Configuracion" ? "active" : "")" href="@Url.Action("Configuracion", "SuperAdmin")"><i class="bi bi-gear"></i> Configuración</a></li>
+        }
+    </ul>
+</nav>

@@ -34,7 +34,7 @@ namespace ClienteWeb
                 }
                 catch
                 {
-                    // ticket inválido
+                    
                 }
             }
         }

@@ -146,6 +146,8 @@
     <Content Include="Content\bootstrap.min.css" />
     <Content Include="Content\bootstrap.rtl.css" />
     <Content Include="Content\bootstrap.rtl.min.css" />
+    <Content Include="Content\layout.css" />
+    <Content Include="Content\login.css" />
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
     <Content Include="Content\Site.css" />
@@ -189,6 +191,7 @@
     <Content Include="Views\Usuario\Seguimiento.cshtml" />
     <Content Include="Views\Admin\RevisarSolicitudes.cshtml" />
     <Content Include="Views\Admin\MisSolicitudes.cshtml" />
+    <Content Include="Views\Shared\_Sidebar.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

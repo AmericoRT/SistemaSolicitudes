@@ -1,0 +1,30 @@
+﻿html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+.image-side {
+    background-image: url('https://www.comexperu.org.pe/upload/images/editorial_essalud-220319-111328.jpg');
+    background-size: cover;
+    background-position: center;
+    height: 100vh;
+}
+
+.login-side {
+    background-color: #f8f9fa;
+}
+
+.login-card {
+    width: 100%;
+    max-width: 400px;
+    background: white;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.1);
+}
+
+.icon-login {
+    font-size: 3rem;
+    color: #0d6efd;
+}
