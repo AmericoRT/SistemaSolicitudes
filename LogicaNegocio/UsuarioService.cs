@@ -17,5 +17,17 @@ namespace LogicaNegocio
             return repo.ValidarUsuario(usuario, clave);
         }
 
+        // Validar si ya existe un usuario por DNI
+        public bool ExisteUsuario(string dni)
+        {
+            return repo.ExisteUsuario(dni);
+        }
+
+        // Registrar un usuario
+        public bool RegistrarUsuario(string dni, string clave)
+        {
+            return repo.RegistrarUsuario(dni, clave);
+        }
+
     }
 }

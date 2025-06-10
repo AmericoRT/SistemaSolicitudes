@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Configuration;
 using Entidades;
 using System.Data.SqlClient;
+using System.Data;
 
 namespace AccesoDatos.Repositories
 {
@@ -42,6 +43,39 @@ namespace AccesoDatos.Repositories
                 return null;
             }
         }
+
+
+
+        public bool ExisteUsuario(string dni)
+        {
+            using (var conexion = new SqlConnection(cadenaConexion))
+            {
+                SqlCommand cmd = new SqlCommand("sp_ExisteUsuario", conexion);
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@DNI", dni);
+                conexion.Open();
+                int count = (int)cmd.ExecuteScalar();
+                return count > 0;
+            }
+        }
+
+        public bool RegistrarUsuario(string dni, string clave)
+        {
+            using (var conexion = new SqlConnection(cadenaConexion))
+            {
+                SqlCommand cmd = new SqlCommand("sp_RegistrarUsuario", conexion);
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@DNI", dni);
+                cmd.Parameters.AddWithValue("@Clave", clave);
+                conexion.Open();
+                int rows = cmd.ExecuteNonQuery();
+                return rows > 0;
+            }
+        }
+
+
+
+
 
     }
 }

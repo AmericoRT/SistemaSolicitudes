@@ -1,0 +1,41 @@
+﻿@model ClienteWeb.ViewModels.RegistroViewModel
+@{
+    ViewBag.Title = "Registro de Usuario";
+}
+<script src="https://cdn.tailwindcss.com"></script>
+
+<div class="min-h-screen flex items-center justify-center bg-gray-100">
+    <div class="bg-white shadow-lg rounded-xl p-8 w-full max-w-md">
+        <h2 class="text-2xl font-semibold mb-6 text-center">Registro de Usuario</h2>
+
+        @using (Html.BeginForm())
+        {
+            @Html.AntiForgeryToken()
+
+            <div class="mb-4">
+                @Html.LabelFor(m => m.DNI)
+                @Html.TextBoxFor(m => m.DNI, new { @class = "form-input w-full" })
+                @Html.ValidationMessageFor(m => m.DNI, "", new { @class = "text-red-500 text-sm" })
+            </div>
+
+            <div class="mb-4">
+                @Html.LabelFor(m => m.Codigo, "Contraseña")
+                @Html.PasswordFor(m => m.Codigo, new { @class = "form-input w-full" })
+                @Html.ValidationMessageFor(m => m.Codigo, "", new { @class = "text-red-500 text-sm" })
+            </div>
+
+            <div class="mb-4">
+                @Html.LabelFor(m => m.ConfirmarCodigo, "Confirmar Contraseña")
+                @Html.PasswordFor(m => m.ConfirmarCodigo, new { @class = "form-input w-full" })
+                @Html.ValidationMessageFor(m => m.ConfirmarCodigo, "", new { @class = "text-red-500 text-sm" })
+            </div>
+
+            <button type="submit" class="bg-blue-600 text-white py-2 w-full rounded-lg hover:bg-blue-700 transition">Registrar</button>
+        }
+
+        @if (ViewBag.Mensaje != null)
+        {
+            <div class="text-red-600 mt-3">@ViewBag.Mensaje</div>
+        }
+    </div>
+</div>

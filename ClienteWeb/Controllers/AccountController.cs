@@ -17,6 +17,10 @@ namespace SistemaSolicitudes.ClienteWeb.Controllers
             return View();
         }
 
+        public ActionResult Registrar()
+        {
+            return View();
+        }
 
         [HttpPost]
         public ActionResult Login(string usuario, string clave)
