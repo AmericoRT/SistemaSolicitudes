@@ -1,10 +1,26 @@
-﻿@{
-    Layout = "~/Views/Shared/_LayoutUser.cshtml";
-    ViewBag.Title = "Perfil";
-}
-@section Styles {
-    <link href="~/Content/layout.css" rel="stylesheet" />
+﻿@model ClienteWeb.Models.PerfilViewModel
+@{
+    ViewBag.Title = "Perfil del Usuario";
 }
 
-<h1>Bienvenido a tu perfil</h1>
-<p>Esta es la sección de perfil del usuario.</p>
+<h2 class="text-2xl font-bold mb-4">Perfil del Usuario</h2>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div>
+        <p><strong>Nombre:</strong> @Model.Nombre @Model.Apellido</p>
+        <p><strong>DNI:</strong> @Model.DNI</p>
+        <p><strong>Email:</strong> @Model.Email</p>
+        <p><strong>Teléfono:</strong> @Model.Telefono</p>
+        <p><strong>Dirección:</strong> @Model.Direccion</p>
+    </div>
+    <div>
+        <p><strong>Fecha de Nacimiento:</strong> @Model.FechaNacimiento.ToShortDateString()</p>
+        <p><strong>Número de Póliza:</strong> @Model.NumeroPoliza</p>
+        <p><strong>Centro de Atención:</strong> @Model.CentroAtencion</p>
+        <p><strong>Fecha de Afiliación:</strong> @Model.FechaAfiliacion.ToShortDateString()</p>
+        @if (!string.IsNullOrEmpty(Model.RutaImagen))
+        {
+            <img src="@Model.RutaImagen" alt="Foto de perfil" width="150" class="mt-2 rounded" />
+        }
+    </div>
+</div>

@@ -28,6 +28,7 @@ namespace SistemaSolicitudes.ClienteWeb.Controllers
             var user = servicio.Login(usuario, clave);
             if (user != null)
             {
+                Session["DNI"] = usuario;
                 if (user.Rol == "Admin")
                     Session["Admin"] = user;
                 else

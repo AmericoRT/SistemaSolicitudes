@@ -1,0 +1,67 @@
+﻿@model ClienteWeb.Models.PerfilViewModel
+
+@{
+    Layout = "~/Views/Shared/_LayoutUser.cshtml";
+    ViewBag.Title = "Perfil del Usuario";
+
+    var imgSrc = !string.IsNullOrEmpty(Model.RutaImagen)
+        ? Url.Content(Model.RutaImagen)
+        : Url.Content("~/Content/Imagenes/PerfilGenerico.png");
+}
+
+<div class="container mt-0">
+    <div class="card shadow-sm border-0 rounded-lg overflow-hidden">
+        <!-- Encabezado oscuro -->
+        <div class="card-header bg-dark text-white py-3 px-4">
+            <h4 class="mb-0">
+                <i class="fas fa-user-circle me-2"></i>Perfil del Usuario
+            </h4>
+        </div>
+
+        <div class="row no-gutters">
+            <!-- Datos -->
+            <div class="col-md-8 p-4">
+                <dl class="row mb-0">
+                    <dt class="col-sm-4 text-muted">Nombre:</dt>
+                    <dd class="col-sm-8">@Model.Nombre</dd>
+
+                    <dt class="col-sm-4 text-muted">Apellido:</dt>
+                    <dd class="col-sm-8">@Model.Apellido</dd>
+
+                    <dt class="col-sm-4 text-muted">DNI:</dt>
+                    <dd class="col-sm-8">@Model.DNI</dd>
+
+                    <dt class="col-sm-4 text-muted">Email:</dt>
+                    <dd class="col-sm-8">@Model.Email</dd>
+
+                    <dt class="col-sm-4 text-muted">Teléfono:</dt>
+                    <dd class="col-sm-8">@Model.Telefono</dd>
+
+                    <dt class="col-sm-4 text-muted">Dirección:</dt>
+                    <dd class="col-sm-8">@Model.Direccion</dd>
+
+                    <dt class="col-sm-4 text-muted">Fecha Nacimiento:</dt>
+                    <dd class="col-sm-8">@Model.FechaNacimiento.ToShortDateString()</dd>
+
+                    <dt class="col-sm-4 text-muted">Número de Póliza:</dt>
+                    <dd class="col-sm-8">@Model.NumeroPoliza</dd>
+
+                    <dt class="col-sm-4 text-muted">Centro de Atención:</dt>
+                    <dd class="col-sm-8">@Model.CentroAtencion</dd>
+
+                    <dt class="col-sm-4 text-muted">Fecha de Afiliación:</dt>
+                    <dd class="col-sm-8">@Model.FechaAfiliacion.ToShortDateString()</dd>
+                </dl>
+            </div>
+
+            <!-- Imagen de perfil -->
+            <div class="col-md-4 d-flex align-items-center justify-content-center p-4 bg-light">
+                <img src="@imgSrc"
+                     alt="Foto perfil"
+                     class="img-thumbnail shadow-lg border border-3 border-secondary"
+                     style="width: 220px; height: 220px; object-fit: cover;"
+                     onerror="this.onerror=null; this.src='@Url.Content("~/Content/Imagenes/PerfilGenerico.png")';" />
+            </div>
+        </div>
+    </div>
+</div>

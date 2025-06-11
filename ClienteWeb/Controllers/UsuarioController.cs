@@ -13,8 +13,9 @@ namespace ClienteWeb.Controllers
             if (Session["Usuario"] == null)
                 return RedirectToAction("Login", "Account");
 
-            return View();
+            return RedirectToAction("Index", "Perfil");
         }
+
 
         public ActionResult Tramitar()
         {
