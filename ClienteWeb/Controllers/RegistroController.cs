@@ -15,7 +15,7 @@ namespace SistemaSolicitudes.ClienteWeb.Controllers
         {
             using (var client = new HttpClient())
             {
-                string apiUrl = $"http://localhost:7756/apiasegurados/api/asegurados/{dni}"; 
+                string apiUrl = $"http://sisdataperu-003-site1.itempurl.com/prueba2/api/asegurados/{dni}"; 
                 client.DefaultRequestHeaders.Accept.Clear();
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
                 client.DefaultRequestHeaders.Add("X-Api-Key", "12345ABCDEF"); // Cambia por tu clave real
