@@ -123,6 +123,7 @@
     <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="Controllers\AdminController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
+    <Compile Include="Controllers\MisSolicitudesController.cs" />
     <Compile Include="Controllers\PerfilController.cs" />
     <Compile Include="Controllers\RegistroController.cs" />
     <Compile Include="Controllers\UsuarioController.cs" />
@@ -200,10 +201,10 @@
     <Content Include="Views\Account\Registrar.cshtml" />
     <Content Include="Views\Registro\Index.cshtml" />
     <Content Include="Views\Perfil\Index.cshtml" />
+    <Content Include="Views\MisSolicitudes\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
-    <Folder Include="Views\NewFolder1\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\bootstrap.rtl.min.css.map" />

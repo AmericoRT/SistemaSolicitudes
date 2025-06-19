@@ -30,7 +30,7 @@ namespace ClienteWeb.Controllers
             if (Session["Usuario"] == null)
                 return RedirectToAction("Login", "Account");
 
-            return View();
+            return RedirectToAction("Index", "MisSolicitudes");
         }
 
         public ActionResult Index() => RedirectToAction("Perfil");
