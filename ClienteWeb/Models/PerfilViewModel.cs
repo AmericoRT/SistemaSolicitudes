@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
+﻿using System.Collections.Generic;
+using System;
 
 namespace ClienteWeb.Models
 {
     public class PerfilViewModel
     {
+        // Información personal del usuario
         public string Nombre { get; set; }
         public string Apellido { get; set; }
         public string DNI { get; set; }
@@ -18,5 +17,17 @@ namespace ClienteWeb.Models
         public string CentroAtencion { get; set; }
         public DateTime FechaAfiliacion { get; set; }
         public string RutaImagen { get; set; }
+
+        // Lista de solicitudes del usuario
+        public List<Solicitud> Solicitudes { get; set; }
+    }
+
+    // Modelo de Solicitud
+    public class Solicitud
+    {
+        public int Id { get; set; }
+        public string Descripcion { get; set; }
+        public string Estado { get; set; }
+        public DateTime Fecha { get; set; }
     }
 }
