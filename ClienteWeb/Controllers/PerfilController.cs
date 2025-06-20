@@ -32,7 +32,7 @@ namespace ClienteWeb.Controllers
 
         private string ObtenerDniDesdeSesion()
         {
-            return Session["DNI"]?.ToString(); // Asegúrate de guardar esto en el login
+            return Session["DNI"]?.ToString(); 
         }
 
         private async Task<PerfilViewModel> ObtenerPerfilDesdeApi(string dni)
