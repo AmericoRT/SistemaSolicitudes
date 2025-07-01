@@ -38,21 +38,60 @@ namespace SistemaSolicitudes.ClienteWeb.Controllers
                 return RedirectToAction("Login", "Account");
 
             int idAdmin = (int)Session["IdUsuario"];
+            int nuevoEstado = 4; // "En Revisión"
 
-            // Asignar la solicitud al admin actual
             using (var conexion = new SqlConnection(ConfigurationManager.ConnectionStrings["ConexionDB"].ConnectionString))
             {
-                string sql = "UPDATE Solicitudes SET idAdministrador = @idAdmin WHERE id = @id AND idAdministrador IS NULL";
-                var cmd = new SqlCommand(sql, conexion);
-                cmd.Parameters.AddWithValue("@idAdmin", idAdmin);
-                cmd.Parameters.AddWithValue("@id", id);
-
                 conexion.Open();
-                cmd.ExecuteNonQuery();
+
+                // 1. Obtener el estado actual
+                int estadoAnterior = 0;
+                string sqlEstado = "SELECT idEstado FROM Solicitudes WHERE id = @id";
+                using (var cmdEstado = new SqlCommand(sqlEstado, conexion))
+                {
+                    cmdEstado.Parameters.AddWithValue("@id", id);
+                    estadoAnterior = (int)cmdEstado.ExecuteScalar();
+                }
+
+                // 2. Asignar administrador y actualizar estado
+                string sqlUpdate = @"
+            UPDATE Solicitudes
+            SET idAdministrador = @idAdmin,
+                idEstado = @nuevoEstado,
+                fechaUltimaModificacion = GETDATE()
+            WHERE id = @id";
+
+                using (var cmdUpdate = new SqlCommand(sqlUpdate, conexion))
+                {
+                    cmdUpdate.Parameters.AddWithValue("@idAdmin", idAdmin);
+                    cmdUpdate.Parameters.AddWithValue("@nuevoEstado", nuevoEstado);
+                    cmdUpdate.Parameters.AddWithValue("@id", id);
+                    cmdUpdate.ExecuteNonQuery();
+                }
+
+                // 3. Insertar en Modificaciones_Solicitud
+                string sqlInsert = @"
+            INSERT INTO Modificaciones_Solicitud
+            (idSolicitud, idAdministrador, idEstadoAnterior, idEstadoNuevo, fechaModificacion, comentario)
+            VALUES
+            (@id, @idAdmin, @estadoAnterior, @nuevoEstado, GETDATE(), @comentario)";
+
+                using (var cmdInsert = new SqlCommand(sqlInsert, conexion))
+                {
+                    cmdInsert.Parameters.AddWithValue("@id", id);
+                    cmdInsert.Parameters.AddWithValue("@idAdmin", idAdmin);
+                    cmdInsert.Parameters.AddWithValue("@estadoAnterior", estadoAnterior);
+                    cmdInsert.Parameters.AddWithValue("@nuevoEstado", nuevoEstado);
+                    cmdInsert.Parameters.AddWithValue("@comentario", "Solicitud asignada y puesta en revisión");
+                    cmdInsert.ExecuteNonQuery();
+                }
+
+                conexion.Close();
             }
 
             return RedirectToAction("MisSolicitudes");
         }
+
 
         public ActionResult Index() => RedirectToAction("MisSolicitudes");
     }
