@@ -1,4 +1,5 @@
-﻿@{
+﻿@model IEnumerable<Entidades.Solicitud>
+@{
     Layout = "~/Views/Shared/_LayoutUser.cshtml";
     ViewBag.Title = "Solicitudes Pendientes";
 }
@@ -8,3 +9,37 @@
 
 <h2>Solicitudes Pendientes</h2>
 
+@if (!Model.Any())
+{
+    <p>No hay solicitudes atendidas aún.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Fecha</th>
+                <th>Estado</th>
+                <th>Tipo</th>
+                <th>Cabecera</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var solicitud in Model)
+            {
+                <tr>
+                    <td>@solicitud.Id</td>
+                    <td>@solicitud.FechaSolicitud</td>
+                    <td>@solicitud.EstadoSolicitud</td>
+                    <td>@solicitud.TipoSolicitud</td>
+                    <td>@solicitud.Cabecera</td>
+                    <td>
+                        @Html.ActionLink("Ver", "Detalle", "Admin", new { id = solicitud.Id }, new { @class = "btn btn-sm btn-info" })
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

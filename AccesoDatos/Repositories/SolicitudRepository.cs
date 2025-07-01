@@ -63,6 +63,50 @@ namespace AccesoDatos.Repositories
                 connection.Close();
             }
         }
+        public List<Solicitud> ObtenerSolicitudesPorAdministrador(int idAdmin)
+        {
+            var solicitudes = new List<Solicitud>();
+
+            using (SqlConnection connection = new SqlConnection(cadenaConexion))
+            {
+                string query = @"
+            SELECT s.id, ts.nombre_tipo AS TipoSolicitud,
+                   es.estado_nombre AS EstadoSolicitud,
+                   s.cabecera, s.detalle AS Descripcion,
+                   s.fechaSolicitud
+            FROM Solicitudes s
+            INNER JOIN Tipos_Solicitud ts ON s.idTipoSolicitud = ts.id
+            INNER JOIN Estados_Solicitud es ON s.idEstado = es.id
+            WHERE s.idAdministrador = @idAdmin";
+
+                SqlCommand command = new SqlCommand(query, connection);
+                command.Parameters.AddWithValue("@idAdmin", idAdmin);
+
+                connection.Open();
+                var reader = command.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    solicitudes.Add(new Solicitud
+                    {
+                        Id = Convert.ToInt32(reader["id"]),
+                        TipoSolicitud = reader["TipoSolicitud"].ToString(),
+                        EstadoSolicitud = reader["EstadoSolicitud"].ToString(),
+                        Cabecera = reader["cabecera"].ToString(),
+                        Descripcion = reader["Descripcion"].ToString(),
+                        FechaSolicitud = Convert.ToDateTime(reader["fechaSolicitud"]),
+                        DocumentoAdjuntoRuta = ""
+                    });
+                }
+
+                reader.Close();
+                connection.Close();
+            }
+
+            return solicitudes;
+        }
+
+
 
     }
 

@@ -1,17 +1,22 @@
-﻿using System.Web.Mvc;
+﻿using Entidades;
+using LogicaNegocio;
+using System.Linq;
+using System.Web.Mvc;
 
 namespace SistemaSolicitudes.ClienteWeb.Controllers
 {
     public class AdminController : Controller
     {
- 
-
+        private SolicitudService _solicitudService = new SolicitudService();
         public ActionResult MisSolicitudes()
         {
-            if (Session["Admin"] == null)
+            if (Session["Admin"] == null || Session["IdUsuario"] == null)
                 return RedirectToAction("Login", "Account");
 
-            return View();
+            int idAdmin = (int)Session["IdUsuario"];
+            var solicitudes = _solicitudService.ObtenerSolicitudesPorAdministrador(idAdmin);
+
+            return View(solicitudes);
         }
 
         public ActionResult RevisarSolicitudes()

@@ -29,5 +29,12 @@ namespace LogicaNegocio
      
             _solicitudRepository.GuardarSolicitud(solicitud); 
         }
+
+        public List<Solicitud> ObtenerSolicitudesPorAdministrador(int idAdmin)
+        {
+            return _solicitudRepository.ObtenerSolicitudesPorAdministrador(idAdmin);
+        }
+
+
     }
 }
