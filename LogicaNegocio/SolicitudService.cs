@@ -35,6 +35,11 @@ namespace LogicaNegocio
             return _solicitudRepository.ObtenerSolicitudesPorAdministrador(idAdmin);
         }
 
+        public List<Solicitud> ObtenerSolicitudesPendientes()
+        {
+            return _solicitudRepository.ObtenerSolicitudesPendientes();
+        }
+
 
     }
 }
