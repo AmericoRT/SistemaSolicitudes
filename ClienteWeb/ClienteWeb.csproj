@@ -203,6 +203,7 @@
     <Content Include="Views\Registro\Index.cshtml" />
     <Content Include="Views\Perfil\Index.cshtml" />
     <Content Include="Views\MisSolicitudes\Index.cshtml" />
+    <Content Include="Views\Admin\Detalle.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

@@ -39,6 +39,14 @@ namespace LogicaNegocio
         {
             return _solicitudRepository.ObtenerSolicitudesPendientes();
         }
+        public Solicitud ObtenerSolicitudPorId(int id) =>
+            _solicitudRepository.ObtenerSolicitudPorId(id);
+
+        public List<EstadoSolicitud> ObtenerEstadosSolicitud() =>
+            _solicitudRepository.ObtenerEstadosSolicitud();
+
+        public void ActualizarEstadoSolicitud(int idSolicitud, int estadoAnterior, int estadoNuevo, int idAdmin, string comentario) =>
+            _solicitudRepository.ActualizarEstadoSolicitud(idSolicitud, estadoAnterior, estadoNuevo, idAdmin, comentario);
 
 
     }

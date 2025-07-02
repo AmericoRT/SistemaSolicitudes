@@ -92,6 +92,39 @@ namespace SistemaSolicitudes.ClienteWeb.Controllers
             return RedirectToAction("MisSolicitudes");
         }
 
+        public ActionResult Detalle(int id)
+        {
+            if (Session["Admin"] == null || Session["IdUsuario"] == null)
+                return RedirectToAction("Login", "Account");
+
+            var solicitud = _solicitudService.ObtenerSolicitudPorId(id);
+            var estados = _solicitudService.ObtenerEstadosSolicitud();
+
+            ViewBag.Estados = new SelectList(estados, "Id", "Nombre", solicitud.IdEstado);
+
+            return View(solicitud);
+        }
+        [HttpPost]
+        public ActionResult Detalle(int id, int nuevoEstado, string comentario)
+        {
+            if (Session["Admin"] == null || Session["IdUsuario"] == null)
+                return RedirectToAction("Login", "Account");
+
+            int idAdmin = (int)Session["IdUsuario"];
+            var solicitud = _solicitudService.ObtenerSolicitudPorId(id);
+
+            if (solicitud.IdEstado == nuevoEstado)
+            {
+                ViewBag.Mensaje = "Debe seleccionar un estado diferente al actual.";
+                ViewBag.Estados = new SelectList(_solicitudService.ObtenerEstadosSolicitud(), "Id", "Nombre", nuevoEstado);
+                return View(solicitud);
+            }
+
+            _solicitudService.ActualizarEstadoSolicitud(solicitud.Id, solicitud.IdEstado, nuevoEstado, idAdmin, comentario);
+
+            return RedirectToAction("MisSolicitudes");
+        }
+
 
         public ActionResult Index() => RedirectToAction("MisSolicitudes");
     }

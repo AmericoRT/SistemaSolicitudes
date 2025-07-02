@@ -1,0 +1,48 @@
+﻿@model Entidades.Solicitud
+@{
+    ViewBag.Title = "Detalle de Solicitud";
+    Layout = "~/Views/Shared/_LayoutUser.cshtml";
+}
+
+<h2>Detalle de Solicitud</h2>
+
+@if (ViewBag.Mensaje != null)
+{
+    <div class="alert alert-warning">@ViewBag.Mensaje</div>
+}
+
+@using (Html.BeginForm())
+{
+    <div class="form-group">
+        <label>Fecha de Solicitud:</label>
+        <p>@Model.FechaSolicitud.ToShortDateString()</p>
+    </div>
+
+    <div class="form-group">
+        <label>Cabecera:</label>
+        <p>@Model.Cabecera</p>
+    </div>
+
+    <div class="form-group">
+        <label>Detalle:</label>
+        <p>@Model.Descripcion</p>
+    </div>
+
+    <div class="form-group">
+        <label>Estado Actual:</label>
+        <p>@Model.EstadoSolicitud</p>
+    </div>
+
+    <div class="form-group">
+        <label>Nuevo Estado:</label>
+        @Html.DropDownList("nuevoEstado", ViewBag.Estados as SelectList, "-- Seleccione Estado --", new { @class = "form-control" })
+    </div>
+
+    <div class="form-group">
+        <label>Comentario:</label>
+        <textarea name="comentario" class="form-control" rows="3"></textarea>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Grabar</button>
+    @Html.ActionLink("Cancelar", "MisSolicitudes", null, new { @class = "btn btn-secondary" })
+}
