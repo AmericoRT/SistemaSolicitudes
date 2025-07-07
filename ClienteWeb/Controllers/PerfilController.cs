@@ -63,7 +63,7 @@ namespace ClienteWeb.Controllers
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine("Error al consumir la API: " + ex.Message);
+                    System.Diagnostics.Debug.WriteLine("Error al obtener datos: " + ex.Message);
                 }
             }
 

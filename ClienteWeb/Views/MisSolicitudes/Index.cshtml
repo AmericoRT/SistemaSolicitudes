@@ -1,156 +1,107 @@
-﻿
-@{
+﻿@{
     Layout = "~/Views/Shared/_LayoutUser.cshtml";
     ViewBag.Title = "Mis Solicitudes";
+    var mensaje = TempData["Mensaje"] as string;   // ⚑ viene del redirect
 }
 
-<!DOCTYPE html>
-<html lang="es">
+<div class="container mx-auto p-6">
+    <h1 class="text-3xl font-bold text-gray-800 mb-6">Mis Solicitudes</h1>
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@ViewBag.Title</title>
+    <!-- Lista de Solicitudes -->
+    <div class="space-y-4">
+        <!-- ==== Ejemplo de tarjeta (repite o haz un foreach) ==== -->
+        <div class="flex justify-between items-center bg-white p-4 rounded-lg shadow-md hover:shadow-xl transition-all duration-300">
+            <div class="flex items-center space-x-7">
+                <i class="fas fa-file-alt text-black text-5xl"></i>
+                <div>
+                    <h5 class="text-lg font-semibold">Solicitud 1</h5>
+                    <div class="grid grid-cols-2 gap-4">
+                        <p class="text-sm text-gray-500">Descripción de la solicitud…</p>
+                        <p class="text-xs text-gray-400">Última actualización: 10/06/2024</p>
+                    </div>
+                </div>
+            </div>
 
-    <!-- Agregar Tailwind CSS desde CDN -->
+            <button class="openModalBtn text-white bg-blue-500 hover:bg-blue-600 py-2 px-4 rounded-md" data-id="1">
+                <i class="fas fa-eye"></i> Ver Detalle
+            </button>
+        </div>
+
+        <!-- …más solicitudes -->
+    </div>
+</div>
+
+<!-- ===== Modal de detalles ===== -->
+<div id="modal" class="fixed inset-0 flex items-center justify-center bg-gray-500 bg-opacity-50 hidden">
+    <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
+        <h2 class="text-xl font-semibold mb-4">Detalles de Solicitud</h2>
+
+        <div class="grid grid-cols-1 gap-4">
+            <p><strong>ID:</strong> <span id="modal-id">1234</span></p>
+            <p><strong>Tipo:</strong> <span id="modal-tipo">Salud</span></p>
+            <p><strong>Descripción:</strong> <span id="modal-descripcion">—</span></p>
+            <p><strong>Estado:</strong> En Proceso</p>
+        </div>
+
+        <div class="mt-6 flex justify-end space-x-4">
+            <button class="closeModalBtn bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600">Cerrar</button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <!-- Tailwind (si no está en tu _Layout) -->
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- Cargar FontAwesome desde CDN -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
-</head>
+    <!-- FontAwesome -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js"></script>
 
-<body class="bg-gray-100">
-
-    <!-- Contenedor principal -->
-    <div class="container mx-auto p-6">
-
-        <!-- Barra lateral (sidebar) -->
-        <div class="flex">
-
-
-            <!-- Sección principal de la lista de solicitudes -->
-            <div class="flex-1 p-6">
-                <h1 class="text-3xl font-bold text-gray-800 mb-6">Mis Solicitudes</h1>
-
-                <!-- Lista de Solicitudes -->
-                <div class="space-y-4">
-                    <!-- Solicitud 1 -->
-                    <div class="flex justify-between items-center bg-white p-4 rounded-lg shadow-md hover:shadow-xl transition-all duration-300">
-                        <!-- Icono de documento a la izquierda -->
-                        <div class="flex items-center space-x-7">
-                            <i class="fas fa-file-alt text-black text-5xl"></i>
-                            <div>
-                                <h5 class="text-lg font-semibold">Solicitud 1</h5>
-                                <div class="grid grid-cols-2 gap-4">
-                                    <p class="text-sm text-gray-500">Descripción de la solicitud...</p>
-                                    <p class="text-xs text-gray-400">Última actualización: 10/06/2024</p>
-                                </div>
-                            </div>
-                        </div>
-
-
-
-                        <!-- Botón para Ver Detalle -->
-                        <button class="btn btn-info btn-sm mt-3 openModalBtn text-white bg-blue-500 hover:bg-blue-600 py-2 px-4 rounded-md" data-id="1">
-                            <i class="fas fa-eye"></i> Ver Detalle
-                        </button>
-                    </div>
-
-                    <!-- Solicitud 2 -->
-                    <div class="flex justify-between items-center bg-white p-4 rounded-lg shadow-md hover:shadow-xl transition-all duration-300">
-                        <!-- Icono de documento a la izquierda -->
-                        <div class="flex items-center space-x-7">
-                            <i class="fas fa-file-alt text-black text-5xl"></i>
-                            <div>
-                                <h5 class="text-lg font-semibold">Solicitud 1</h5>
-                                <div class="grid grid-cols-2 gap-4">
-                                    <p class="text-sm text-gray-500">Descripción de la solicitud...</p>
-                                    <p class="text-xs text-gray-400">Última actualización: 10/06/2024</p>
-                                </div>
-                            </div>
-                        </div>
-
-
-
-                        <!-- Botón para Ver Detalle -->
-                        <button class="btn btn-info btn-sm mt-3 openModalBtn text-white bg-blue-500 hover:bg-blue-600 py-2 px-4 rounded-md" data-id="2">
-                            <i class="fas fa-eye"></i> Ver Detalle
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-    </div>
-
-    <!-- Modal de detalles de solicitud -->
-    <div id="modal" class="fixed inset-0 flex items-center justify-center bg-gray-500 bg-opacity-50 hidden">
-        <div class="bg-white p-8 rounded-lg shadow-lg w-1/3">
-            <h2 class="text-xl font-semibold mb-4">Detalles de Solicitud</h2>
-
-            <!-- Información de la solicitud -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="space-y-4">
-                    <p><strong>ID de Solicitud:</strong> <span id="modal-id">1234</span></p>
-                    <p><strong>Tipo de Solicitud:</strong> <span id="modal-tipo">Salud</span></p>
-                    <p><strong>Descripción:</strong> <span id="modal-descripcion">Cambio de cortinas en la sala de espera.</span></p>
-                    <p><strong>Fecha de creación:</strong> 10/06/2024</p>
-                </div>
-
-                <!-- Columna de la fecha -->
-                <div class="space-y-4">
-                    <!-- Barra de progreso -->
-                    <div class="w-full bg-gray-200 rounded-full h-2">
-                        <div class="bg-blue-500 h-2 rounded-full" style="width: 50%"></div>
-                    </div>
-                    <p class="text-sm text-gray-600">Estado: En Proceso</p>
-                    <p><strong>Última actualización:</strong> 15/06/2024</p>
-                </div>
-            </div>
-
-            <!-- Alerta (cuando la solicitud fue observada) -->
-            <div class="bg-yellow-100 text-yellow-800 p-4 rounded-lg mt-4">
-                <p><strong>Alerta:</strong> Esta solicitud ha sido observada. Por favor, adjunta el documento corregido.</p>
-            </div>
-
-            <!-- Opciones de acción -->
-            <div class="mt-4 flex justify-end space-x-4">
-                <button class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 closeModalBtn">Cerrar</button>
-                <button class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">Subir archivo</button>
-            </div>
-        </div>
-    </div>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
-        // Abrir el modal
-        const openModalBtns = document.querySelectorAll(".openModalBtn");
-        openModalBtns.forEach(button => {
-            button.addEventListener("click", () => {
-                const solicitudId = button.getAttribute("data-id");
+        // === Popup de éxito ===
+        @if (!string.IsNullOrEmpty(mensaje))
+        {
+            <text>
+                document.addEventListener('DOMContentLoaded', function () {
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Registro exitoso!',
+                        text: '@mensaje',
+                        confirmButtonText: 'OK',
+                        confirmButtonColor: '#3085d6',
+                        backdrop: true
+                    });
+                });
+            </text>
+        }
 
-                // Aquí puedes cargar los detalles específicos de la solicitud basada en `solicitudId`
-                document.getElementById("modal-id").textContent = solicitudId;
-                document.getElementById("modal-tipo").textContent = solicitudId == "1" ? "Salud" : "Otro";
-                document.getElementById("modal-descripcion").textContent = solicitudId == "1" ? "Cambio de cortinas en la sala de espera." : "Solicitud de otro tipo.";
+        // === Modal simple ===
+        document.querySelectorAll(".openModalBtn").forEach(btn => {
+            btn.addEventListener("click", () => {
+                const id = btn.dataset.id;
+                document.getElementById("modal-id").textContent = id;
+                document.getElementById("modal-tipo").textContent = id === "1" ? "Salud" : "Otro";
+                document.getElementById("modal-descripcion").textContent = id === "1"
+                    ? "Cambio de cortinas en la sala de espera."
+                    : "Solicitud de otro tipo.";
 
                 document.getElementById("modal").classList.remove("hidden");
             });
         });
 
-        // Cerrar el modal
-        const closeModalBtns = document.querySelectorAll(".closeModalBtn");
-        closeModalBtns.forEach(button => {
-            button.addEventListener("click", () => {
+        document.querySelectorAll(".closeModalBtn").forEach(btn => {
+            btn.addEventListener("click", () => {
                 document.getElementById("modal").classList.add("hidden");
             });
         });
 
-        // Cerrar el modal si se hace clic en el fondo (área gris)
-        document.querySelector("#modal .bg-gray-500").addEventListener("click", () => {
-            document.getElementById("modal").classList.add("hidden");
+        // Cerrar si se hace clic en el fondo gris
+        document.getElementById("modal").addEventListener("click", (e) => {
+            if (e.target.id === "modal") {
+                e.target.classList.add("hidden");
+            }
         });
     </script>
-
-</body>
-
-</html>
+}

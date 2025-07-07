@@ -6,7 +6,6 @@
 <div class="min-h-screen bg-gray-100 px-4 pt-10 pb-16 flex justify-center">
     <div class="w-full max-w-7xl bg-white rounded-xl shadow-xl overflow-hidden grid grid-cols-1 md:grid-cols-2">
 
-
         <div class="hidden md:block">
             <img src="https://st.depositphotos.com/5390090/51510/v/450/depositphotos_515102604-stock-illustration-registration-form-cute-cartoon-man.jpg"
                  alt="Decoración salud"
@@ -14,7 +13,6 @@
         </div>
 
         <div class="p-10">
-
             <div class="bg-black text-white text-center py-4 rounded-t-lg mb-6">
                 <h2 class="text-3xl font-bold">Generar Nueva Solicitud</h2>
             </div>
@@ -26,21 +24,33 @@
                 </div>
             }
 
-            <form method="post" asp-action="GenerarSolicitud" asp-controller="Solicitudes" enctype="multipart/form-data" class="space-y-6">
+            @using (Html.BeginForm(               /* <-- genera el atributo action correcto */
+                    "GenerarSolicitud",           /* acción           */
+                    "Tramitar",                   /* controlador      */
+                    FormMethod.Post,
+                    new { enctype = "multipart/form-data", @class = "space-y-6" }))
+            {
+                @Html.AntiForgeryToken() /* requerido porque tu método usa [ValidateAntiForgeryToken] */
+
                 <div>
-                    <label class="block mb-1 font-semibold text-gray-700">Tipo de Solicitud</label>
-                    <select name="TipoSolicitud" required
-                            class="w-full bg-white border border-gray-300 text-gray-800 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-black">
-                        <option value="">-- Selecciona un tipo --</option>
-                        <option value="Autorización">Autorización</option>
-                        <option value="Reembolso">Reembolso</option>
-                        <option value="Consulta">Consulta</option>
-                    </select>
+                    <label class="block mb-1 font-semibold text-gray-700">Tipo de Solicitud:</label>
+                    @Html.DropDownList("IdTipoSolicitud",
+                                       ViewBag.TiposSolicitud as SelectList,
+                                       "-- Seleccione Tipo --",
+                                       new { @class = "w-full bg-white border border-gray-300 text-gray-800 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-black" })
+                </div>
+
+                <div>
+                    <label class="block mb-1 font-semibold text-gray-700">Ingresa el asunto de tu solicitud</label>
+                    <input type="text" name="Cabecera" required
+                           placeholder="Ingresa el asunto de tu solicitud"
+                           class="w-full bg-white border border-gray-300 text-gray-800 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-black" />
                 </div>
 
                 <div>
                     <label class="block mb-1 font-semibold text-gray-700">Descripción</label>
-                    <textarea name="Descripcion" rows="4" placeholder="Describe tu solicitud..." required
+                    <textarea name="Descripcion" rows="4" required
+                              placeholder="Describe tu solicitud..."
                               class="w-full bg-white border border-gray-300 text-gray-800 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-black"></textarea>
                 </div>
 
@@ -54,7 +64,7 @@
                         class="w-full bg-black hover:bg-gray-900 text-white py-2 rounded-lg shadow transition duration-300">
                     <i class="bi bi-send"></i> Enviar Solicitud
                 </button>
-            </form>
+            }
         </div>
     </div>
 </div>

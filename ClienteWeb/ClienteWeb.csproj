@@ -237,6 +237,10 @@
     <Content Include="Scripts\jquery-3.7.0.min.map" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\AccesoDatos\AccesoDatos.csproj">
+      <Project>{13526DF3-F5AD-4A09-A30E-CD18201D559E}</Project>
+      <Name>AccesoDatos</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Entidades\Entidades.csproj">
       <Project>{be5fcf3d-f9bd-46e4-8d60-0753d65524bd}</Project>
       <Name>Entidades</Name>

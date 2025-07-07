@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Web;
 using System.Web.Mvc;
+using ClienteWeb.Models;
 using Entidades;
 using LogicaNegocio;
 
@@ -20,17 +21,21 @@ namespace ClienteWeb.Controllers
         // Acción para mostrar el formulario de solicitud
         public ActionResult RegistrarSolicitud()
         {
-            // Obtener los tipos de solicitud desde la base de datos usando el servicio
-            ViewBag.TiposSolicitud = _solicitudService.ObtenerTiposSolicitud() ?? new List<Entidades.TipoSolicitud>();
+            int nuevoEstado = 4;
+            ViewBag.TiposSolicitud = _solicitudService.ObtenerTiposSolicitud();
+
+            var estados = _solicitudService.ObtenerTiposSolicitud();
+            ViewBag.TiposSolicitud = new SelectList(estados, "IdTipoSolicitud", "Nombre");
+
 
             // Pasamos los tipos de solicitud a la vista
-            return View("Usuario/RegistrarSolicitud");
+            return View("~/Views/Usuario/Tramitar.cshtml");
         }
 
-        // Acción para manejar el envío del formulario y registrar la solicitud
+        
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult GenerarSolicitud(Solicitud solicitud, HttpPostedFileBase DocumentoAdjunto)
+        public ActionResult GenerarSolicitud(Entidades.Solicitud solicitud, HttpPostedFileBase DocumentoAdjunto)
         {
             // Verificar si el formulario es válido
             if (!ModelState.IsValid)
@@ -52,7 +57,7 @@ namespace ClienteWeb.Controllers
                 solicitud.DocumentoAdjuntoRuta = filePath;
             }
 
-            // Llamar al servicio de negocios para guardar la solicitud
+            solicitud.IdAsegurado = (int)Session["IdUsuario"];
             _solicitudService.GuardarSolicitud(solicitud);
 
             // Mensaje de éxito al guardar la solicitud

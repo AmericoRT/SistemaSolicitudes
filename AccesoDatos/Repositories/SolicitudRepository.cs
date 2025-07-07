@@ -35,7 +35,7 @@ namespace AccesoDatos.Repositories
                     {
                         tiposSolicitud.Add(new TipoSolicitud
                         {
-                            Id = Convert.ToInt32(reader["Id"]),
+                            Id = Convert.ToInt32(reader["IdTipoSolicitud"]),
                             Nombre = reader["Nombre"].ToString()
                         });
                     }
@@ -53,10 +53,12 @@ namespace AccesoDatos.Repositories
                 SqlCommand command = new SqlCommand("InsertarSolicitud", connection);
                 command.CommandType = CommandType.StoredProcedure;
 
-                command.Parameters.AddWithValue("@TipoSolicitud", solicitud.TipoSolicitud);
-                command.Parameters.AddWithValue("@Descripcion", solicitud.Descripcion);
-                command.Parameters.AddWithValue("@FechaSolicitud", solicitud.FechaSolicitud);
-                command.Parameters.AddWithValue("@DocumentoAdjuntoRuta", solicitud.DocumentoAdjuntoRuta);
+                command.Parameters.AddWithValue("@idAsegurado", solicitud.IdAsegurado);
+                command.Parameters.AddWithValue("@idAdministrador", DBNull.Value);
+                command.Parameters.AddWithValue("@idEstado", 1);
+                command.Parameters.AddWithValue("@idTipoSolicitud", solicitud.IdTipoSolicitud);
+                command.Parameters.AddWithValue("@cabecera", solicitud.Cabecera ?? "");
+                command.Parameters.AddWithValue("@detalle", solicitud.Descripcion ?? "");
 
                 connection.Open();
                 command.ExecuteNonQuery();
