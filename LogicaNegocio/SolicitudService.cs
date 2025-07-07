@@ -30,6 +30,16 @@ namespace LogicaNegocio
             _solicitudRepository.GuardarSolicitud(solicitud); 
         }
 
+        public List<Solicitud> ObtenerPorIdUsuario(int idUsuario)
+        {
+            return _solicitudRepository.ObtenerSolicitudesPorUsuario(idUsuario);
+        }
+
+        public List<Solicitud> ObtenerPorIdUsuarioYFechas(int idUsuario, DateTime fechaInicio,DateTime fechaFin)
+        {
+            return _solicitudRepository.ObtenerSolicitudesPorUsuarioYFechas(idUsuario, fechaInicio, fechaFin);
+        }
+
         public List<Solicitud> ObtenerSolicitudesPorAdministrador(int idAdmin)
         {
             return _solicitudRepository.ObtenerSolicitudesPorAdministrador(idAdmin);

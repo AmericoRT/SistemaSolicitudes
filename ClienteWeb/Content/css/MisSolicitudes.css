@@ -1,0 +1,100 @@
+﻿
+.container-custom {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.titulo-principal {
+    font-size: 28px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.solicitudes-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.solicitud-card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: box-shadow 0.3s ease;
+    width: 100%;
+}
+
+    .solicitud-card:hover {
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+
+.solicitud-icon {
+    font-size: 40px;
+    color: black;
+    margin-right: 15px;
+}
+
+.solicitud-info {
+    flex: 1;
+    text-align: left;
+}
+
+.solicitud-title {
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+}
+
+.solicitud-fecha-col {
+    flex-shrink: 0;
+    margin: 0 20px;
+    text-align: center;
+}
+
+.solicitud-fecha {
+    font-size: 14px;
+    color: #666;
+}
+
+.btn-detalle {
+    background: black;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 6px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+    .btn-detalle:hover {
+        background: #333;
+        color: white;
+    }
+
+.error-message {
+    background: #fee;
+    border: 1px solid #fcc;
+    color: #c33;
+    padding: 12px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+}
+
+.no-solicitudes {
+    color: #666;
+}
+.solicitud-estado-row {
+    margin-top: 8px;
+    font-size: 0.95rem;
+    color: #333;
+}
+
+

@@ -65,6 +65,94 @@ namespace AccesoDatos.Repositories
                 connection.Close();
             }
         }
+
+        public List<Solicitud> ObtenerSolicitudesPorUsuario(int idUsuario)
+        {
+            List<Solicitud> lista = new List<Solicitud>();
+
+            using (SqlConnection con = new SqlConnection(cadenaConexion))
+            {
+                SqlCommand cmd = new SqlCommand(@"SELECT s.*,tipoEstado=es.estado_nombre,tipoSolicitud=tp.nombre_tipo
+                    FROM Solicitudes s inner join Tipos_Solicitud tp on s.idTipoSolicitud=tp.id
+                    inner join Estados_Solicitud es on s.idEstado = es.id 
+                    WHERE idAsegurado = @idUsuario", con);
+                cmd.Parameters.AddWithValue("@idUsuario", idUsuario);
+                con.Open();
+
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        lista.Add(new Solicitud
+                        {
+                            Id = Convert.ToInt32(reader["id"]),
+                            IdAsegurado = Convert.ToInt32(reader["idAsegurado"]),
+                            IdTipoSolicitud = Convert.ToInt32(reader["idTipoSolicitud"]),
+                            IdEstado = Convert.ToInt32(reader["idEstado"]),
+                            Cabecera = reader["cabecera"].ToString(),
+                            Descripcion = reader["detalle"].ToString(),
+                            FechaSolicitud = Convert.ToDateTime(reader["fechaSolicitud"]),
+                            FechaUltimaModificacion = Convert.ToDateTime(reader["fechaUltimaModificacion"]),
+                            TipoSolicitud = reader["tipoSolicitud"].ToString(),
+                            EstadoSolicitud = reader["tipoEstado"].ToString(),
+                        });
+                    }
+                }
+            }
+
+            return lista;
+        }
+
+        public List<Solicitud> ObtenerSolicitudesPorUsuarioYFechas(int idUsuario, DateTime fechaInicio, DateTime fechaFin)
+        {
+            try
+            {
+                List<Solicitud> lista = new List<Solicitud>();
+
+                using (SqlConnection con = new SqlConnection(cadenaConexion))
+                {
+                    SqlCommand cmd = new SqlCommand(@"SELECT s.*,tipoEstado=es.estado_nombre,tipoSolicitud=tp.nombre_tipo
+                    FROM Solicitudes s inner join Tipos_Solicitud tp on s.idTipoSolicitud=tp.id
+                    inner join Estados_Solicitud es on s.idEstado = es.id 
+                    WHERE idAsegurado = @idUsuario AND fechaSolicitud >= @FechaInicio 
+                    AND fechaSolicitud <= @FechaFin
+                    ORDER BY fechaSolicitud DESC", con);
+                    cmd.Parameters.AddWithValue("@idUsuario", idUsuario);
+                    cmd.Parameters.AddWithValue("@fechaInicio", fechaInicio);
+                    cmd.Parameters.AddWithValue("@fechaFin", fechaFin);
+                    con.Open();
+
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            lista.Add(new Solicitud
+                            {
+                                Id = Convert.ToInt32(reader["id"]),
+                                IdAsegurado = Convert.ToInt32(reader["idAsegurado"]),
+                                IdTipoSolicitud = Convert.ToInt32(reader["idTipoSolicitud"]),
+                                IdEstado = Convert.ToInt32(reader["idEstado"]),
+                                Cabecera = reader["cabecera"].ToString(),
+                                Descripcion = reader["detalle"].ToString(),
+                                FechaSolicitud = Convert.ToDateTime(reader["fechaSolicitud"]),
+                                FechaUltimaModificacion = Convert.ToDateTime(reader["fechaUltimaModificacion"]),
+                                TipoSolicitud = reader["tipoSolicitud"].ToString(),
+                                EstadoSolicitud = reader["tipoEstado"].ToString(),
+                            });
+                        }
+                    }
+                }
+
+                return lista;
+            }
+            catch(Exception ex)
+            {
+                throw new Exception($"Error al obtener solicitud: {ex.Message}", ex);
+            }
+        }
+
+
+
         public List<Solicitud> ObtenerSolicitudesPorAdministrador(int idAdmin)
         {
             var solicitudes = new List<Solicitud>();

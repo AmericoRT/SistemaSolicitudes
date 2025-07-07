@@ -155,6 +155,7 @@
     <Content Include="Content\Imagenes\PerfilGenerico.png" />
     <Content Include="Content\layout.css" />
     <Content Include="Content\login.css" />
+    <Content Include="Content\css\MisSolicitudes.css" />
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
     <Content Include="Content\Site.css" />

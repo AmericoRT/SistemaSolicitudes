@@ -1,93 +1,210 @@
-﻿using System;
+﻿using Entidades;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
+using AccesoDatos;
+using Utiles;
+using AccesoDatos.Repositories;
 
 namespace ClienteWeb.Controllers
 {
     public class MisSolicitudesController : Controller
     {
-        public ActionResult Index()
+        private Dictionary<string, string> _estadosMap;
+
+        private Dictionary<string, string> ObtenerEstadosMap()
         {
-            // Comprobar si el usuario está autenticado (en este caso, usando la sesión)
-            if (Session["Usuario"] == null)
+            if (_estadosMap == null)
             {
-                // Si no está autenticado, redirigir a la página de login
+                try
+                {
+                    var repo = new SolicitudRepository();
+                    var estados = repo.ObtenerEstadosSolicitud();
+                    _estadosMap = estados.ToDictionary(e => e.Id.ToString(), e => e.Nombre);
+                }
+                catch
+                {
+                    // Fallback en caso de error
+                    _estadosMap = new Dictionary<string, string>
+                    {
+                        { "1", "Pendiente" },
+                        { "2", "En Proceso" },
+                        { "3", "Completada" },
+                        { "4", "Rechazada" }
+                    };
+                }
+            }
+            return _estadosMap;
+        }
+
+        public async Task<ActionResult> Index(string fechaInicio = null, string fechaFin = null, string estado = null)
+        {
+            if (Session["Usuario"] == null)
                 return RedirectToAction("Login", "Account");
+
+            if (!DateUtils.ValidarRango(fechaInicio, fechaFin, out string mensajeError))
+            {
+                ViewBag.Error = mensajeError;
+                fechaInicio = fechaFin = null;
             }
 
-            // Aquí iría la lógica para obtener las solicitudes del usuario
-            // Por ejemplo, llamando a un servicio o accediendo al modelo
-            var solicitudes = ObtenerSolicitudesDeUsuario(); // Este es un método ficticio
+            // Cargar estados
+            try
+            {
+                var repo = new SolicitudRepository();
+                var estados = repo.ObtenerEstadosSolicitud();
+                ViewBag.EstadosSolicitud = new SelectList(estados, "Id", "Nombre", estado);
+            }
+            catch (Exception ex)
+            {
+                var estadosDefault = new List<dynamic>
+                {
+                    new { Id = "Pendiente", Nombre = "Pendiente" },
+                    new { Id = "En Proceso", Nombre = "En Proceso" },
+                    new { Id = "Completada", Nombre = "Completada" },
+                    new { Id = "Rechazada", Nombre = "Rechazada" }
+                };
+                ViewBag.EstadosSolicitud = new SelectList(estadosDefault, "Id", "Nombre", estado);
+                System.Diagnostics.Debug.WriteLine($"Error cargando estados: {ex.Message}");
+            }
 
-            // Pasamos las solicitudes a la vista
+            var solicitudes = new List<Solicitud>();
+            int idUsuario = (int)Session["IdUsuario"];
+
+            using (HttpClient client = new HttpClient())
+            {
+                client.BaseAddress = new Uri("https://localhost:44300/");
+                client.DefaultRequestHeaders.Accept.Clear();
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+                string url = $"api/solicitudes/usuario/{idUsuario}";
+                List<string> parametros = new List<string>();
+
+                if (!string.IsNullOrEmpty(fechaInicio) && DateTime.TryParse(fechaInicio, out DateTime fi))
+                    parametros.Add($"fechaInicio={HttpUtility.UrlEncode(fi.ToString("yyyy-MM-dd"))}");
+
+                if (!string.IsNullOrEmpty(fechaFin) && DateTime.TryParse(fechaFin, out DateTime ff))
+                    parametros.Add($"fechaFin={HttpUtility.UrlEncode(ff.ToString("yyyy-MM-dd"))}");
+
+                if (!string.IsNullOrEmpty(estado))
+                    parametros.Add($"estado={HttpUtility.UrlEncode(estado)}");
+
+                if (parametros.Count > 0)
+                    url += "?" + string.Join("&", parametros);
+
+                var response = await client.GetAsync(url);
+                if (response.IsSuccessStatusCode)
+                {
+                    var json = await response.Content.ReadAsStringAsync();
+                    solicitudes = JsonConvert.DeserializeObject<List<Solicitud>>(json);
+                }
+                else
+                {
+                    ViewBag.Error = "No se pudo obtener las solicitudes desde el servicio.";
+                }
+            }
+
+            if (solicitudes != null && solicitudes.Count > 0)
+            {
+                var solicitudesFiltradas = solicitudes.AsQueryable();
+
+                if (!string.IsNullOrEmpty(fechaInicio) && DateTime.TryParse(fechaInicio, out DateTime inicioDate))
+                    solicitudesFiltradas = solicitudesFiltradas.Where(s => s.FechaSolicitud >= inicioDate);
+
+                if (!string.IsNullOrEmpty(fechaFin) && DateTime.TryParse(fechaFin, out DateTime finDate))
+                {
+                    finDate = finDate.Date.AddDays(1).AddTicks(-1);
+                    solicitudesFiltradas = solicitudesFiltradas.Where(s => s.FechaSolicitud <= finDate);
+                }
+
+                if (!string.IsNullOrEmpty(estado))
+                {
+                    var estadosMap = ObtenerEstadosMap();
+                    if (estadosMap.ContainsKey(estado))
+                    {
+                        string nombreEstado = estadosMap[estado];
+                        solicitudesFiltradas = solicitudesFiltradas.Where(s =>
+                            s.EstadoSolicitud.Equals(nombreEstado, StringComparison.OrdinalIgnoreCase));
+                    }
+                    else
+                    {
+                        solicitudesFiltradas = solicitudesFiltradas.Where(s =>
+                            s.EstadoSolicitud.Equals(estado, StringComparison.OrdinalIgnoreCase));
+                    }
+                }
+
+                solicitudes = solicitudesFiltradas.ToList();
+            }
+
+            ViewBag.FechaInicio = fechaInicio;
+            ViewBag.FechaFin = fechaFin;
+            ViewBag.Estado = estado;
+
+            List<string> filtrosActivos = new List<string>();
+            if (!string.IsNullOrEmpty(fechaInicio)) filtrosActivos.Add($"Desde: {fechaInicio}");
+            if (!string.IsNullOrEmpty(fechaFin)) filtrosActivos.Add($"Hasta: {fechaFin}");
+            if (!string.IsNullOrEmpty(estado)) filtrosActivos.Add($"Estado: {estado}");
+
+            ViewBag.FiltrosActivos = filtrosActivos.Count > 0 ? string.Join(", ", filtrosActivos) : null;
+
             return View(solicitudes);
         }
 
-        // Acción para ver los detalles de una solicitud
-        public ActionResult VerDetalle(int id)
+        public async Task<ActionResult> Detalle(int id)
         {
-            // Comprobar si el usuario está autenticado
             if (Session["Usuario"] == null)
-            {
-                // Si no está autenticado, redirigir a la página de login
                 return RedirectToAction("Login", "Account");
-            }
 
-            // Lógica para obtener los detalles de la solicitud
-            var solicitud = ObtenerSolicitudPorId(id); // Este es un método ficticio
+            Solicitud solicitud = null;
+
+            using (HttpClient client = new HttpClient())
+            {
+                client.BaseAddress = new Uri("https://localhost:44300/");
+                client.DefaultRequestHeaders.Accept.Clear();
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+                HttpResponseMessage response = await client.GetAsync($"api/solicitudes/{id}");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var json = await response.Content.ReadAsStringAsync();
+                    solicitud = JsonConvert.DeserializeObject<Solicitud>(json);
+                }
+                else
+                {
+                    ViewBag.Error = "No se pudo obtener el detalle de la solicitud.";
+                }
+            }
 
             if (solicitud == null)
-            {
-                // Si no se encuentra la solicitud, redirigir a una página de error o mostrar un mensaje
-                return HttpNotFound();
-            }
+                return HttpNotFound("Solicitud no encontrada");
 
-            // Pasamos los detalles de la solicitud a la vista
             return View(solicitud);
         }
 
-        // Acción para realizar un seguimiento (Ejemplo de flujo para redirección)
         public ActionResult Seguimiento()
         {
-            // Comprobar si el usuario está autenticado
             if (Session["Usuario"] == null)
-            {
-                // Si no está autenticado, redirigir a la página de login
                 return RedirectToAction("Login", "Account");
-            }
-
-            // Aquí iría la lógica de seguimiento que deseas mostrar al usuario
-            // Puede ser redirigir a otra acción o mostrar información sobre el seguimiento
 
             return RedirectToAction("Index", "MisSolicitudes");
         }
 
-        // Acción de inicio de sesión (si se requiere)
         public ActionResult Login()
         {
-            return View();  // Vista del login
+            return View();
         }
 
-        // Acción para manejar el cierre de sesión
         public ActionResult Logout()
         {
-            Session["Usuario"] = null;  // Elimina el usuario de la sesión
-            return RedirectToAction("Login", "Account");  // Redirige a la página de login
-        }
-
-        // Métodos auxiliares para obtener datos (puedes adaptarlos a tu lógica)
-        private object ObtenerSolicitudesDeUsuario()
-        {
-            // Simulación de obtener solicitudes de un usuario desde un repositorio o base de datos
-            return new List<string> { "Solicitud 1", "Solicitud 2" }; // Esto es solo un ejemplo
-        }
-
-        private object ObtenerSolicitudPorId(int id)
-        {
-            // Simulación de obtener los detalles de una solicitud desde un repositorio o base de datos
-            return new { Id = id, Descripcion = "Descripción de la solicitud", Estado = "Pendiente" }; // Ejemplo ficticio
+            Session["Usuario"] = null;
+            return RedirectToAction("Login", "Account");
         }
     }
 }

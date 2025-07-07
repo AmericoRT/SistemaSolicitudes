@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.13.35931.197 d17.13
+VisualStudioVersion = 17.13.35931.197
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NewFolder1", "NewFolder1", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
 EndProject
@@ -14,6 +14,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LogicaNegocio", "LogicaNegocio\LogicaNegocio.csproj", "{CBED4CF9-17DD-4CC2-A56D-A5357AC83B76}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Utiles", "Utiles\Utiles.csproj", "{5876D758-7A4F-4457-B208-EFAFF66D2E3F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebServicesAbb", "WebServicesAbb\WebServicesAbb.csproj", "{BE28229F-DFE2-4860-89C1-FAE9516BB918}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -41,6 +43,10 @@ Global
 		{5876D758-7A4F-4457-B208-EFAFF66D2E3F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5876D758-7A4F-4457-B208-EFAFF66D2E3F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5876D758-7A4F-4457-B208-EFAFF66D2E3F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BE28229F-DFE2-4860-89C1-FAE9516BB918}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BE28229F-DFE2-4860-89C1-FAE9516BB918}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BE28229F-DFE2-4860-89C1-FAE9516BB918}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BE28229F-DFE2-4860-89C1-FAE9516BB918}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
