@@ -151,6 +151,56 @@ namespace AccesoDatos.Repositories
             }
         }
 
+        public Solicitud ObtenerSolicitudesPorId(int id)
+        {
+            Solicitud solicitud = null;
+
+            using (SqlConnection connection = new SqlConnection(cadenaConexion))
+            {
+                string query = @"
+                SELECT top 1 s.id, s.cabecera, s.detalle,
+                s.fechaSolicitud,
+                s.idAsegurado, s.idAdministrador,
+                s.idTipoSolicitud, s.idEstado,
+                ts.nombre_tipo, es.estado_nombre,
+                fechaUltimaModificacion=ms.fechaModificacion,
+                observacion = ms.comentario 
+                FROM Solicitudes s
+                INNER JOIN Tipos_Solicitud ts ON s.idTipoSolicitud = ts.id
+                INNER JOIN Estados_Solicitud es ON s.idEstado = es.id
+                INNER JOIN Modificaciones_Solicitud ms ON s.id = ms.idSolicitud and ms.idEstadoNuevo=s.idEstado
+                WHERE s.id = @id";
+
+                SqlCommand cmd = new SqlCommand(query, connection);
+                cmd.Parameters.AddWithValue("@id", id);
+                connection.Open();
+
+                SqlDataReader reader = cmd.ExecuteReader();
+                if (reader.Read())
+                {
+                    solicitud = new Solicitud
+                    {
+                        Id = (int)reader["id"],
+                        Cabecera = reader["cabecera"].ToString(),
+                        Descripcion = reader["detalle"].ToString(),
+                        FechaSolicitud = (DateTime)reader["fechaSolicitud"],
+                        //DocumentoAdjuntoRuta = reader["documentoAdjuntoRuta"].ToString(),
+                        IdAsegurado = (int)reader["idAsegurado"],
+                        IdAdministrador = reader["idAdministrador"] as int?,
+                        IdTipoSolicitud = (int)reader["idTipoSolicitud"],
+                        IdEstado = (int)reader["idEstado"],
+                        TipoSolicitud = reader["nombre_tipo"].ToString(),
+                        EstadoSolicitud = reader["estado_nombre"].ToString(),
+                        FechaUltimaModificacion = (DateTime)reader["fechaUltimaModificacion"],
+                        Observacion = reader["observacion"] != DBNull.Value ? reader["observacion"].ToString() : null,
+                    };
+                }
+
+                connection.Close();
+            }
+
+            return solicitud;
+        }
 
 
         public List<Solicitud> ObtenerSolicitudesPorAdministrador(int idAdmin)
@@ -287,7 +337,7 @@ namespace AccesoDatos.Repositories
 
             using (SqlConnection connection = new SqlConnection(cadenaConexion))
             {
-                string query = "SELECT id, estado_nombre FROM Estados_Solicitud";
+                string query = "SELECT id, estado_nombre FROM Estados_Solicitud WHERE estado_nombre!='ANULADA' ";
                 SqlCommand cmd = new SqlCommand(query, connection);
                 connection.Open();
 

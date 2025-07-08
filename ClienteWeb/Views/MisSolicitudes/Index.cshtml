@@ -4,174 +4,255 @@
     ViewBag.Title = "Mis Solicitudes";
 }
 
-@* Referencias CSS *@
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
 <link href="~/Content/css/MisSolicitudes.css" rel="stylesheet" />
 
+<style>
+    /* Estilos para los filtros */
+    .filtros-container {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
 
+    .filtros-row {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        flex-wrap: wrap;
+    }
+
+    .filtro-grupo {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .filtro-label {
+        font-weight: 600;
+        color: #495057;
+        font-size: 14px;
+    }
+
+    .filtro-input {
+        padding: 8px 12px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        font-size: 14px;
+        min-width: 150px;
+    }
+
+        .filtro-input:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+        }
+
+    .btn-filtrar {
+        background: #007bff;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: background-color 0.2s;
+    }
+
+        .btn-filtrar:hover {
+            background: #0056b3;
+        }
+
+    .btn-limpiar {
+        background: #6c757d;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: background-color 0.2s;
+    }
+
+        .btn-limpiar:hover {
+            background: #545b62;
+        }
+
+    .filtros-activos {
+        margin-top: 15px;
+        padding: 10px;
+        background: #e3f2fd;
+        border-radius: 4px;
+        border-left: 4px solid #2196f3;
+    }
+
+    .filtros-activos-titulo {
+        font-weight: 600;
+        color: #1976d2;
+        margin-bottom: 5px;
+    }
+
+    .filtros-activos-texto {
+        color: #1976d2;
+        font-size: 14px;
+    }
+
+    .loading {
+        text-align: center;
+        padding: 20px;
+        display: none;
+    }
+
+        .loading i {
+            font-size: 24px;
+            animation: spin 1s linear infinite;
+        }
+
+
+    .close-button {
+        position: absolute;
+        top: 10px;
+        right: 15px;
+        font-size: 24px;
+        color: #999;
+        text-decoration: none;
+    }
+
+        .close-button:hover {
+            color: red;
+        }
+
+    .modal {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .modal.show {
+            display: flex;
+        }
+
+    .modal-content {
+        background-color: white;
+        padding: 20px;
+        border-radius: 8px;
+        width: 100%;
+        max-width: 600px;
+        position: relative;
+    }
+
+</style>
 
 <div class="container-custom">
-    <h1 class="titulo-principal">Mis Solicitudes</h1>
-
-    @if (ViewBag.Error != null)
-    {
-        <div class="error-message">
-            <strong>Error:</strong> @ViewBag.Error
-        </div>
-    }
+    <h1 class="text-2xl font-bold mb-4">Mis Solicitudes</h1>
 
     <!-- Filtros -->
-    <div class="filtros-container">
-        <div class="filtros-row">
-            <div class="filtro-grupo">
-                <label class="filtro-label">Fecha Inicio:</label>
-                <input type="date" id="fechaInicio" class="filtro-input" value="@ViewBag.FechaInicio" />
-            </div>
-
-            <div class="filtro-grupo">
-                <label class="filtro-label">Fecha Fin:</label>
-                <input type="date" id="fechaFin" class="filtro-input" value="@ViewBag.FechaFin" />
-            </div>
-
-            <div class="filtro-grupo">
-                <label class="filtro-label">Estado:</label>
-                @Html.DropDownList("estado", (SelectList)ViewBag.EstadosSolicitud, "Todos los estados", new { @class = "filtro-input", @id = "estado" })
-            </div>
-
-            <div class="filtro-grupo" style="margin-top: 20px;">
-                <button type="button" class="btn-filtrar" onclick="aplicarFiltros()">
-                    <i class="fas fa-search"></i>
-                    <span>Buscar</span>
-                </button>
-            </div>
-
-            <div class="filtro-grupo" style="margin-top: 20px;">
-                <button type="button" class="btn-limpiar" onclick="limpiarFiltros()">
-                    <i class="fas fa-eraser"></i>
-                    <span>Limpiar</span>
-                </button>
-            </div>
-        </div>
-
-        <!-- Filtros activos -->
-        @if (ViewBag.FiltrosActivos != null)
-        {
-            <div class="filtros-activos">
-                <div class="filtros-activos-titulo">
-                    <i class="fas fa-filter"></i> Filtros aplicados:
+    <form method="get" action="@Url.Action("Index", "MisSolicitudes")">
+        <div class="filtros-container mb-4">
+            <div class="filtros-row flex flex-wrap gap-4">
+                <div class="filtro-grupo">
+                    <label class="filtro-label">Fecha Inicio:</label>
+                    <input type="date" name="fechaInicio" class="filtro-input" value="@ViewBag.FechaInicio" />
                 </div>
-                <div class="filtros-activos-texto">@ViewBag.FiltrosActivos</div>
+
+                <div class="filtro-grupo">
+                    <label class="filtro-label">Fecha Fin:</label>
+                    <input type="date" name="fechaFin" class="filtro-input" value="@ViewBag.FechaFin" />
+                </div>
+
+                <div class="filtro-grupo">
+                    <label class="filtro-label">Estado:</label>
+                    @Html.DropDownList("estado", (SelectList)ViewBag.EstadosSolicitud, "Todos los estados", new { @class = "filtro-input" })
+                </div>
+
+                <div class="filtro-grupo flex items-end">
+                    <button type="submit" class="btn-filtrar">
+                        <i class="fas fa-search"></i> Buscar
+                    </button>
+                </div>
+
+                <div class="filtro-grupo flex items-end">
+                    <a href="@Url.Action("Index", "MisSolicitudes")" class="btn-limpiar">
+                        <i class="fas fa-eraser"></i> Limpiar
+                    </a>
+                </div>
             </div>
-        }
-    </div>
 
-    <!-- Loading -->
-    <div id="loading" class="loading">
-        <i class="fas fa-spinner"></i>
-        <p>Cargando solicitudes...</p>
-    </div>
+            @if (ViewBag.FiltrosActivos != null)
+            {
+                <div class="filtros-activos mt-4">
+                    <strong><i class="fas fa-filter"></i> Filtros aplicados:</strong>
+                    <div>@ViewBag.FiltrosActivos</div>
+                </div>
+            }
+        </div>
+    </form>
 
-    <!-- Resultados -->
-    <div id="resultados-container">
-        @if (Model != null && Model.Count > 0)
-        {
-            <div class="solicitudes-container">
-                @foreach (var s in Model)
-                {
-                    <div class="solicitud-card">
-                        <!-- Fila 1: Icono + Título -->
-                        <div style="display: flex; align-items: center; justify-content: space-between;">
-                            <div style="display: flex; align-items: center;">
-                                <i class="fas fa-file-alt solicitud-icon"></i>
-                                <div class="solicitud-info">
-                                    <div class="solicitud-title">@s.Cabecera</div>
-                                </div>
-                            </div>
-                            <!-- Fecha como columna alineada a la derecha -->
-                            <div class="solicitud-fecha-col">
-                                <div class="solicitud-fecha">@s.FechaSolicitud.ToShortDateString()</div>
+    <!-- Lista de solicitudes -->
+    @if (Model != null && Model.Count > 0)
+    {
+        <div class="solicitudes-container">
+            @foreach (var s in Model)
+            {
+                <div class="solicitud-card">
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center gap-2">
+                            <i class="fas fa-file-alt text-blue-600 text-xl"></i>
+                            <div>
+                                <div class="font-semibold">@s.Cabecera</div>
+                                <div class="text-sm text-gray-500">@s.FechaSolicitud.ToShortDateString()</div>
                             </div>
                         </div>
-                        <!-- Fila 2: Estado -->
-                        <div class="solicitud-estado-row">
+                        <div class="text-sm">
                             <strong>Estado:</strong> @s.EstadoSolicitud
                         </div>
-                        <!-- Fila 3: Botón -->
-                        <div style="margin-top: 10px;">
-                            <a href="@Url.Action("Detalle", "MisSolicitudes", new { id = s.Id })" class="btn-detalle">
+                    </div>
+                    <div class="mt-4">
+                        <form action="@Url.Action("VerDetalle", "MisSolicitudes")" method="post">
+                            <input type="hidden" name="id" value="@s.Id" />
+                            <button type="submit" class="btn-detalle">
                                 <i class="fas fa-eye"></i>
                                 <span>Ver Detalle</span>
-                            </a>
-                        </div>
+                            </button>
+                        </form>
                     </div>
-                }
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <p class="text-gray-500">No se encontraron solicitudes con los filtros aplicados.</p>
+    }
+
+    <!-- Modal de detalle -->
+    @if (ViewBag.DetalleSolicitud != null)
+    {
+        var d = (Entidades.Solicitud)ViewBag.DetalleSolicitud;
+        <div class="modal show" id="modalDetalle">
+            <div class="modal-content">
+                <a href="@Url.Action("Index", "MisSolicitudes")" class="close-button">&times;</a>
+                <h2 class="text-xl font-semibold mb-4">Detalle de Solicitud</h2>
+                <p><strong>Cabecera:</strong> @d.Cabecera</p>
+                <p><strong>Fecha:</strong> @d.FechaSolicitud.ToShortDateString()</p>
+                <p><strong>Estado:</strong> @d.EstadoSolicitud</p>
+                <p><strong>Detalle:</strong> @d.Descripcion</p>
+                <p><strong>Fecha Modificacion:</strong> @d.FechaUltimaModificacion.ToShortDateString()</p>
+                <p><strong>Observacion:</strong> @d.Observacion</p>
+                <!-- Puedes agregar más campos aquí -->
             </div>
-        }
-        else
-        {
-            <p class="no-solicitudes">No se encontraron solicitudes con los filtros aplicados.</p>
-        }
-    </div>
+        </div>
+    }
 </div>
-
-<script>
-    function aplicarFiltros() {
-        const fechaInicio = document.getElementById('fechaInicio').value;
-        const fechaFin = document.getElementById('fechaFin').value;
-        const estado = document.getElementById('estado').value;
-
-        if (fechaInicio && fechaFin && fechaInicio > fechaFin) {
-            alert('La fecha de inicio no puede ser mayor a la fecha fin.');
-            return;
-        }
-
-        document.getElementById('loading').style.display = 'block';
-        document.getElementById('resultados-container').style.display = 'none';
-
-        let url = '@Url.Action("Index", "MisSolicitudes")' + '?';
-        const params = [];
-
-        if (fechaInicio) params.push('fechaInicio=' + encodeURIComponent(fechaInicio));
-        if (fechaFin) params.push('fechaFin=' + encodeURIComponent(fechaFin));
-        if (estado) params.push('estado=' + encodeURIComponent(estado));
-
-        url += params.join('&');
-
-        window.location.href = url;
-    }
-
-    function limpiarFiltros() {
-        document.getElementById('fechaInicio').value = '';
-        document.getElementById('fechaFin').value = '';
-        document.getElementById('estado').value = '';
-
-        // Redirigir sin parámetros
-        window.location.href = '@Url.Action("Index", "MisSolicitudes")';
-    }
-
-
-    // Evento para Enter en los campos de fecha
-    document.getElementById('fechaInicio').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            aplicarFiltros();
-        }
-    });
-
-    document.getElementById('fechaFin').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            aplicarFiltros();
-        }
-    });
-
-
-    document.getElementById('fechaInicio').addEventListener('change', function() {
-        const fechaInicio = this.value;
-        const fechaFin = document.getElementById('fechaFin');
-
-        if (fechaInicio && !fechaFin.value) {
-            const fecha = new Date(fechaInicio);
-            fecha.setDate(fecha.getDate() + 30);
-            fechaFin.value = fecha.toISOString().split('T')[0];
-        }
-    });
-</script>

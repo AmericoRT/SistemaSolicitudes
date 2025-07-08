@@ -20,7 +20,9 @@ namespace Entidades
         public int? IdAdministrador { get; set; }  // nullable
         public int IdTipoSolicitud { get; set; }
         public int IdEstado { get; set; }
-        public DateTime? FechaUltimaModificacion { get; set; }
+        public DateTime FechaUltimaModificacion { get; set; }
+
+        public string Observacion { get; set; }
     }
 
 }
