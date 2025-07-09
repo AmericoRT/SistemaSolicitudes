@@ -52,11 +52,26 @@ namespace LogicaNegocio
         public Solicitud ObtenerSolicitudPorId(int id) =>
             _solicitudRepository.ObtenerSolicitudPorId(id);
 
-        public List<EstadoSolicitud> ObtenerEstadosSolicitud() =>
-            _solicitudRepository.ObtenerEstadosSolicitud();
+        public List<EstadoSolicitud> ObtenerEstadosSolicitud()
+        {
+            return _solicitudRepository.ObtenerEstadosSolicitud();
+        }
+
 
         public void ActualizarEstadoSolicitud(int idSolicitud, int estadoAnterior, int estadoNuevo, int idAdmin, string comentario) =>
             _solicitudRepository.ActualizarEstadoSolicitud(idSolicitud, estadoAnterior, estadoNuevo, idAdmin, comentario);
+        public List<Solicitud> FiltrarSolicitudes(DateTime? fecha, string dni, string nombre, int? idTipo, int? idEstado)
+        {
+            return _solicitudRepository.FiltrarSolicitudes(fecha, dni, nombre, idTipo, idEstado);
+        }
+
+
+        public List<Solicitud> ObtenerSolicitudesPorAdministradorFiltrado(
+    int idAdmin, DateTime? fecha, string dni, string nombre, int? idTipo, int? idEstado)
+        {
+            return _solicitudRepository.ObtenerSolicitudesPorAdministradorFiltrado(idAdmin, fecha, dni, nombre, idTipo, idEstado);
+        }
+
 
 
     }

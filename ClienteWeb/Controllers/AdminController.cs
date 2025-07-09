@@ -1,5 +1,6 @@
 ﻿using Entidades;
 using LogicaNegocio;
+using System;
 using System.Configuration;
 using System.Data.SqlClient;
 using System.Linq;
@@ -10,23 +11,34 @@ namespace SistemaSolicitudes.ClienteWeb.Controllers
     public class AdminController : Controller
     {
         private SolicitudService _solicitudService = new SolicitudService();
-        public ActionResult MisSolicitudes()
+        public ActionResult MisSolicitudes(DateTime? fecha, string dni, string nombre, int? idTipo, int? idEstado)
         {
-            if (Session["Admin"] == null || Session["IdUsuario"] == null)
+            if (Session["Admin"] == null)
                 return RedirectToAction("Login", "Account");
 
             int idAdmin = (int)Session["IdUsuario"];
-            var solicitudes = _solicitudService.ObtenerSolicitudesPorAdministrador(idAdmin);
 
+            // Cargar dropdowns
+            ViewBag.Tipos = new SelectList(_solicitudService.ObtenerTiposSolicitud(), "Id", "Nombre", idTipo);
+            ViewBag.Estados = new SelectList(_solicitudService.ObtenerEstadosSolicitud(), "Id", "Nombre", idEstado);
+
+            // Enviar filtros
+            var solicitudes = _solicitudService.ObtenerSolicitudesPorAdministradorFiltrado(
+                idAdmin, fecha, dni, nombre, idTipo, idEstado
+            );
             return View(solicitudes);
         }
 
-        public ActionResult RevisarSolicitudes()
+
+        public ActionResult RevisarSolicitudes(DateTime? fecha, string dni, string nombre, int? idTipo, int? idEstado)
         {
-            if (Session["Admin"] == null || Session["IdUsuario"] == null)
+            if (Session["Admin"] == null)
                 return RedirectToAction("Login", "Account");
 
-            var solicitudes = _solicitudService.ObtenerSolicitudesPendientes();
+            ViewBag.Tipos = new SelectList(_solicitudService.ObtenerTiposSolicitud(), "Id", "Nombre", idTipo);
+            ViewBag.Estados = new SelectList(_solicitudService.ObtenerEstadosSolicitud(), "Id", "Nombre", idEstado);
+
+            var solicitudes = _solicitudService.FiltrarSolicitudes(fecha, dni, nombre, idTipo, idEstado);
 
             return View(solicitudes);
         }

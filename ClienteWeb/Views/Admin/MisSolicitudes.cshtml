@@ -9,6 +9,33 @@
 
 <h2>Solicitudes Pendientes</h2>
 
+@using (Html.BeginForm("MisSolicitudes", "Admin", FormMethod.Get))
+{
+    <div class="form-inline mb-3">
+        <label class="mr-2">Fecha:</label>
+        <input type="date" name="fecha" class="form-control mr-3"
+               value="@(Request["fecha"])" />
+
+        <label class="mr-2">DNI:</label>
+        <input type="text" name="dni" class="form-control mr-3"
+               value="@(Request["dni"])" />
+
+        <label class="mr-2">Nombre:</label>
+        <input type="text" name="nombre" class="form-control mr-3"
+               value="@(Request["nombre"])" />
+
+        <label class="mr-2">Tipo de solicitud:</label>
+        @Html.DropDownList("idTipo", (SelectList)ViewBag.Tipos, "Todos", new { @class = "form-control mr-3" })
+
+        <label class="mr-2">Estado:</label>
+        @Html.DropDownList("idEstado", (SelectList)ViewBag.Estados, "Todos", new { @class = "form-control mr-3" })
+
+        <button type="submit" class="btn btn-primary mr-2">Filtrar</button>
+        <a href="@Url.Action("MisSolicitudes", "Admin")" class="btn btn-secondary">Limpiar filtros</a>
+    </div>
+}
+
+
 @if (!Model.Any())
 {
     <p>No hay solicitudes atendidas aún.</p>
@@ -19,10 +46,12 @@ else
         <thead>
             <tr>
                 <th>ID</th>
-                <th>Fecha</th>
-                <th>Estado</th>
+                <th>DNI</th>
+                <th>Asegurado</th>
                 <th>Tipo</th>
+                <th>Estado</th>
                 <th>Cabecera</th>
+                <th>Fecha</th>
                 <th>Acciones</th>
             </tr>
         </thead>
@@ -31,10 +60,12 @@ else
             {
                 <tr>
                     <td>@solicitud.Id</td>
-                    <td>@solicitud.FechaSolicitud</td>
-                    <td>@solicitud.EstadoSolicitud</td>
+                    <td>@solicitud.DNI</td>
+                    <td>@solicitud.NombreAsegurado</td>
                     <td>@solicitud.TipoSolicitud</td>
+                    <td>@solicitud.EstadoSolicitud</td>
                     <td>@solicitud.Cabecera</td>
+                    <td>@solicitud.FechaSolicitud.ToString("g")</td>
                     <td>
                         @Html.ActionLink("Ver", "Detalle", "Admin", new { id = solicitud.Id }, new { @class = "btn btn-sm btn-info" })
                     </td>

@@ -9,6 +9,33 @@
 
 <h2>Solicitudes pendientes sin revisar</h2>
 
+@using (Html.BeginForm("RevisarSolicitudes", "Admin", FormMethod.Get))
+{
+    <div class="form-inline mb-3">
+        <label class="mr-2">Fecha:</label>
+        <input type="date" name="fecha" class="form-control mr-3"
+               value="@(Request["fecha"])" />
+
+        <label class="mr-2">DNI:</label>
+        <input type="text" name="dni" class="form-control mr-3"
+               value="@(Request["dni"])" />
+
+        <label class="mr-2">Nombre:</label>
+        <input type="text" name="nombre" class="form-control mr-3"
+               value="@(Request["nombre"])" />
+
+        <label class="mr-2">Tipo:</label>
+        @Html.DropDownList("idTipo", (SelectList)ViewBag.Tipos, "Todos", new { @class = "form-control mr-3" })
+
+        <label class="mr-2">Estado:</label>
+        @Html.DropDownList("idEstado", (SelectList)ViewBag.Estados, "Todos", new { @class = "form-control mr-3" })
+
+        <button type="submit" class="btn btn-primary mr-2">Filtrar</button>
+        <a href="@Url.Action("RevisarSolicitudes", "Admin")" class="btn btn-secondary">Limpiar filtros</a>
+    </div>
+}
+
+
 @if (!Model.Any())
 {
     <p>No hay solicitudes pendientes.</p>
@@ -19,6 +46,8 @@ else
         <thead>
             <tr>
                 <th>ID</th>
+                <th>DNI</th>
+                <th>Asegurado</th>
                 <th>Tipo</th>
                 <th>Estado</th>
                 <th>Cabecera</th>
@@ -31,11 +60,14 @@ else
             {
                 <tr>
                     <td>@solicitud.Id</td>
+                    <td>@solicitud.DNI</td>
+                    <td>@solicitud.NombreAsegurado</td>
                     <td>@solicitud.TipoSolicitud</td>
                     <td>@solicitud.EstadoSolicitud</td>
                     <td>@solicitud.Cabecera</td>
-                    <td>@solicitud.FechaSolicitud.ToShortDateString()</td>
+                    <td>@solicitud.FechaSolicitud.ToString("g")</td>
                     <td>
+                        @Html.ActionLink("Ver", "Detalle", "Admin", new { id = solicitud.Id }, new { @class = "btn btn-sm btn-info mr-2" })
                         @using (Html.BeginForm("GestionarSolicitud", "Admin", FormMethod.Post))
                         {
                             @Html.Hidden("id", solicitud.Id)
@@ -45,5 +77,6 @@ else
                 </tr>
             }
         </tbody>
+
     </table>
 }

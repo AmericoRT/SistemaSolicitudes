@@ -21,6 +21,10 @@ namespace Entidades
         public int IdTipoSolicitud { get; set; }
         public int IdEstado { get; set; }
         public DateTime? FechaUltimaModificacion { get; set; }
+
+        public string DNI { get; set; }
+        public string NombreAsegurado { get; set; }
+
     }
 
 }

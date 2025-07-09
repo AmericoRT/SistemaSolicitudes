@@ -20,31 +20,29 @@ namespace AccesoDatos.Repositories
         }
 
         public List<TipoSolicitud> ObtenerTiposSolicitud()
+        {
+            var tiposSolicitud = new List<TipoSolicitud>();
+
+            using (SqlConnection connection = new SqlConnection(cadenaConexion))
             {
-                var tiposSolicitud = new List<TipoSolicitud>();
+                SqlCommand command = new SqlCommand("SELECT id, nombre_tipo AS Nombre FROM Tipos_Solicitud", connection);
+                connection.Open();
 
-                using (SqlConnection connection = new SqlConnection(cadenaConexion))
+                SqlDataReader reader = command.ExecuteReader();
+                while (reader.Read())
                 {
-                    SqlCommand command = new SqlCommand("ObtenerTiposSolicitud", connection);
-                    command.CommandType = CommandType.StoredProcedure;
-
-                    connection.Open();
-
-                    SqlDataReader reader = command.ExecuteReader();
-                    while (reader.Read())
+                    tiposSolicitud.Add(new TipoSolicitud
                     {
-                        tiposSolicitud.Add(new TipoSolicitud
-                        {
-                            Id = Convert.ToInt32(reader["IdTipoSolicitud"]),
-                            Nombre = reader["Nombre"].ToString()
-                        });
-                    }
-
-                    connection.Close();
+                        Id = Convert.ToInt32(reader["id"]),
+                        Nombre = reader["Nombre"].ToString()
+                    });
                 }
 
-                return tiposSolicitud;
+                connection.Close();
             }
+
+            return tiposSolicitud;
+        }
 
         public void GuardarSolicitud(Solicitud solicitud)
         {
@@ -346,6 +344,125 @@ namespace AccesoDatos.Repositories
                 connection.Close();
             }
         }
+
+        public List<Solicitud> FiltrarSolicitudes(DateTime? fecha, string dni, string nombre, int? idTipo, int? idEstado)
+        {
+            var lista = new List<Solicitud>();
+
+            using (SqlConnection connection = new SqlConnection(cadenaConexion))
+            {
+                string query = @"
+            SELECT s.id, s.cabecera, s.detalle, s.fechaSolicitud,
+                   ts.nombre_tipo, es.estado_nombre,
+                   u.DNI, CONCAT(a.nombre, ' ', a.apellido) AS NombreAsegurado
+            FROM Solicitudes s
+            INNER JOIN Asegurado a ON s.idAsegurado = a.idAsegurado
+            INNER JOIN Usuario u ON a.idUsuario = u.idUsuario
+            INNER JOIN Tipos_Solicitud ts ON s.idTipoSolicitud = ts.id
+            INNER JOIN Estados_Solicitud es ON s.idEstado = es.id
+            WHERE s.idAdministrador IS NULL"; // solo no gestionadas
+
+                // Aplica filtros si se enviaron
+                if (fecha.HasValue)
+                    query += " AND CAST(s.fechaSolicitud AS DATE) = @fecha";
+
+                if (!string.IsNullOrEmpty(dni))
+                    query += " AND u.DNI LIKE @dni";
+
+                if (!string.IsNullOrEmpty(nombre))
+                    query += " AND (a.nombre LIKE @nombre OR a.apellido LIKE @nombre)";
+
+                SqlCommand cmd = new SqlCommand(query, connection);
+
+                if (fecha.HasValue)
+                    cmd.Parameters.AddWithValue("@fecha", fecha.Value.Date);
+                if (!string.IsNullOrEmpty(dni))
+                    cmd.Parameters.AddWithValue("@dni", "%" + dni + "%");
+                if (!string.IsNullOrEmpty(nombre))
+                    cmd.Parameters.AddWithValue("@nombre", "%" + nombre + "%");
+
+                connection.Open();
+                SqlDataReader reader = cmd.ExecuteReader();
+                while (reader.Read())
+                {
+                    lista.Add(new Solicitud
+                    {
+                        Id = (int)reader["id"],
+                        Cabecera = reader["cabecera"].ToString(),
+                        Descripcion = reader["detalle"].ToString(),
+                        FechaSolicitud = Convert.ToDateTime(reader["fechaSolicitud"]),
+                        TipoSolicitud = reader["nombre_tipo"].ToString(),
+                        EstadoSolicitud = reader["estado_nombre"].ToString(),
+                        DNI = reader["DNI"].ToString(),
+                        NombreAsegurado = reader["NombreAsegurado"].ToString()
+                    });
+                }
+
+                connection.Close();
+            }
+
+            return lista;
+        }
+        public List<Solicitud> ObtenerSolicitudesPorAdministradorFiltrado(
+    int idAdmin, DateTime? fecha, string dni, string nombre, int? idTipo, int? idEstado)
+        {
+            var lista = new List<Solicitud>();
+
+            using (SqlConnection connection = new SqlConnection(cadenaConexion))
+            {
+                string query = @"
+            SELECT s.id, s.cabecera, s.detalle, s.fechaSolicitud,
+                   ts.nombre_tipo, es.estado_nombre,
+                   u.DNI, CONCAT(a.nombre, ' ', a.apellido) AS NombreAsegurado
+            FROM Solicitudes s
+            INNER JOIN Asegurado a ON s.idAsegurado = a.idAsegurado
+            INNER JOIN Usuario u ON a.idUsuario = u.idUsuario
+            INNER JOIN Tipos_Solicitud ts ON s.idTipoSolicitud = ts.id
+            INNER JOIN Estados_Solicitud es ON s.idEstado = es.id
+            WHERE s.idAdministrador = @idAdmin";
+
+                if (fecha.HasValue)
+                    query += " AND CAST(s.fechaSolicitud AS DATE) = @fecha";
+                if (!string.IsNullOrEmpty(dni))
+                    query += " AND u.DNI LIKE @dni";
+                if (!string.IsNullOrEmpty(nombre))
+                    query += " AND (a.nombre LIKE @nombre OR a.apellido LIKE @nombre)";
+                if (idTipo.HasValue)
+                    query += " AND s.idTipoSolicitud = @idTipo";
+                if (idEstado.HasValue)
+                    query += " AND s.idEstado = @idEstado";
+
+                SqlCommand cmd = new SqlCommand(query, connection);
+                cmd.Parameters.AddWithValue("@idAdmin", idAdmin);
+                if (fecha.HasValue) cmd.Parameters.AddWithValue("@fecha", fecha.Value.Date);
+                if (!string.IsNullOrEmpty(dni)) cmd.Parameters.AddWithValue("@dni", "%" + dni + "%");
+                if (!string.IsNullOrEmpty(nombre)) cmd.Parameters.AddWithValue("@nombre", "%" + nombre + "%");
+                if (idTipo.HasValue) cmd.Parameters.AddWithValue("@idTipo", idTipo.Value);
+                if (idEstado.HasValue) cmd.Parameters.AddWithValue("@idEstado", idEstado.Value);
+
+                connection.Open();
+                SqlDataReader reader = cmd.ExecuteReader();
+                while (reader.Read())
+                {
+                    lista.Add(new Solicitud
+                    {
+                        Id = (int)reader["id"],
+                        Cabecera = reader["cabecera"].ToString(),
+                        Descripcion = reader["detalle"].ToString(),
+                        FechaSolicitud = Convert.ToDateTime(reader["fechaSolicitud"]),
+                        TipoSolicitud = reader["nombre_tipo"].ToString(),
+                        EstadoSolicitud = reader["estado_nombre"].ToString(),
+                        DNI = reader["DNI"].ToString(),
+                        NombreAsegurado = reader["NombreAsegurado"].ToString()
+                    });
+                }
+
+                connection.Close();
+            }
+
+            return lista;
+        }
+
 
 
 
