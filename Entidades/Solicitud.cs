@@ -25,6 +25,7 @@ namespace Entidades
         public string DNI { get; set; }
         public string NombreAsegurado { get; set; }
 
+        public string Observacion { get; set; }
     }
 
 }

@@ -19,15 +19,15 @@ namespace ClienteWeb.Models
         public string RutaImagen { get; set; }
 
         // Lista de solicitudes del usuario
-        public List<Solicitud> Solicitudes { get; set; }
+        //public List<Solicitud> Solicitudes { get; set; }
     }
 
-    // Modelo de Solicitud
-    public class Solicitud
-    {
-        public int Id { get; set; }
-        public string Descripcion { get; set; }
-        public string Estado { get; set; }
-        public DateTime Fecha { get; set; }
-    }
+    //// Modelo de Solicitud
+    //public class Solicitud
+    //{
+    //    public int Id { get; set; }
+    //    public string Descripcion { get; set; }
+    //    public string Estado { get; set; }
+    //    public DateTime Fecha { get; set; }
+    //}
 }
