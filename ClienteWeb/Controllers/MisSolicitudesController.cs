@@ -14,6 +14,8 @@ using Utiles;
 
 public class MisSolicitudesController : Controller
 {
+    //string ApiUrl = "https://localhost:44359/";
+    string ApiUrl = "https://localhost:44300/";
     public async Task<ActionResult> Index(string fechaInicio = null, string fechaFin = null, string estado = null)
     {
         if (Session["Usuario"] == null)
@@ -72,7 +74,7 @@ public class MisSolicitudesController : Controller
         Solicitud solicitud = null;
         using (var client = new HttpClient())
         {
-            client.BaseAddress = new Uri("https://localhost:44300/");
+            client.BaseAddress = new Uri(ApiUrl);
             client.DefaultRequestHeaders.Accept.Clear();
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
@@ -110,7 +112,7 @@ public class MisSolicitudesController : Controller
 
         using (HttpClient client = new HttpClient())
         {
-            client.BaseAddress = new Uri("https://localhost:44300/");
+            client.BaseAddress = new Uri(ApiUrl);
             client.DefaultRequestHeaders.Accept.Clear();
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 

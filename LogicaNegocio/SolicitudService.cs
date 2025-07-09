@@ -76,6 +76,10 @@ namespace LogicaNegocio
         {
             return _solicitudRepository.ObtenerSolicitudesPorAdministradorFiltrado(idAdmin, fecha, dni, nombre, idTipo, idEstado);
         }
+        public List<Solicitud> ObtenerPorIdAdministrador(int idAdministrador)
+        {
+            return _solicitudRepository.ObtenerSolicitudesPorAdministrador(idAdministrador);
+        }
 
 
 

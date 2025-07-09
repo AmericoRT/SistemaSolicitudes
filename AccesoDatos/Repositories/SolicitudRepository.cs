@@ -208,14 +208,22 @@ namespace AccesoDatos.Repositories
             using (SqlConnection connection = new SqlConnection(cadenaConexion))
             {
                 string query = @"
-            SELECT s.id, ts.nombre_tipo AS TipoSolicitud,
-                   es.estado_nombre AS EstadoSolicitud,
-                   s.cabecera, s.detalle AS Descripcion,
-                   s.fechaSolicitud
+            SELECT 
+                s.id, 
+                ts.nombre_tipo AS TipoSolicitud,
+                es.estado_nombre AS EstadoSolicitud,
+                s.cabecera, 
+                s.detalle AS Descripcion,
+                s.fechaSolicitud,
+                u.DNI,
+                (a.Nombre + ' ' + a.Apellido) AS NombreAsegurado
             FROM Solicitudes s
             INNER JOIN Tipos_Solicitud ts ON s.idTipoSolicitud = ts.id
             INNER JOIN Estados_Solicitud es ON s.idEstado = es.id
-            WHERE s.idAdministrador = @idAdmin";
+            INNER JOIN Asegurado a ON s.idAsegurado = a.IdAsegurado
+            INNER JOIN Usuario u ON a.IdUsuario = u.IdUsuario
+            WHERE s.idAdministrador = @idAdmin
+                ";
 
                 SqlCommand command = new SqlCommand(query, connection);
                 command.Parameters.AddWithValue("@idAdmin", idAdmin);
@@ -228,6 +236,8 @@ namespace AccesoDatos.Repositories
                     solicitudes.Add(new Solicitud
                     {
                         Id = Convert.ToInt32(reader["id"]),
+                        DNI = reader["DNI"].ToString(),
+                        NombreAsegurado = reader["NombreAsegurado"].ToString(),
                         TipoSolicitud = reader["TipoSolicitud"].ToString(),
                         EstadoSolicitud = reader["EstadoSolicitud"].ToString(),
                         Cabecera = reader["cabecera"].ToString(),
@@ -250,13 +260,20 @@ namespace AccesoDatos.Repositories
             using (SqlConnection connection = new SqlConnection(cadenaConexion))
             {
                 string query = @"
-            SELECT s.id, ts.nombre_tipo AS TipoSolicitud,
-                   es.estado_nombre AS EstadoSolicitud,
-                   s.cabecera, s.detalle AS Descripcion,
-                   s.fechaSolicitud
+            SELECT 
+                s.id, 
+                ts.nombre_tipo AS TipoSolicitud,
+                es.estado_nombre AS EstadoSolicitud,
+                s.cabecera, 
+                s.detalle AS Descripcion,
+                s.fechaSolicitud,
+                u.DNI,
+               (a.Nombre + ' ' + a.Apellido) AS NombreAsegurado
             FROM Solicitudes s
             INNER JOIN Tipos_Solicitud ts ON s.idTipoSolicitud = ts.id
             INNER JOIN Estados_Solicitud es ON s.idEstado = es.id
+            INNER JOIN Asegurado a ON s.idAsegurado = a.IdAsegurado
+            INNER JOIN Usuario u ON a.IdUsuario = u.IdUsuario
             WHERE s.idAdministrador IS NULL";
 
                 SqlCommand command = new SqlCommand(query, connection);
@@ -273,6 +290,8 @@ namespace AccesoDatos.Repositories
                         Cabecera = reader["cabecera"].ToString(),
                         Descripcion = reader["Descripcion"].ToString(),
                         FechaSolicitud = Convert.ToDateTime(reader["fechaSolicitud"]),
+                        DNI = reader["DNI"].ToString(),
+                        NombreAsegurado = reader["NombreAsegurado"].ToString(),
                         DocumentoAdjuntoRuta = ""
                     });
                 }
@@ -362,25 +381,27 @@ namespace AccesoDatos.Repositories
             {
                 connection.Open();
 
-                // 1. Actualizar el estado de la solicitud
+                // 1. Actualizar el estado y asignar el administrador si aún no está asignado
                 string updateSql = @"
-            UPDATE Solicitudes
-            SET idEstado = @nuevoEstado,
-                fechaUltimaModificacion = GETDATE()
-            WHERE id = @idSolicitud";
+        UPDATE Solicitudes
+        SET idEstado = @nuevoEstado,
+            idAdministrador = ISNULL(idAdministrador, @idAdmin), -- asignar solo si está null
+            fechaUltimaModificacion = GETDATE()
+        WHERE id = @idSolicitud";
 
                 using (var cmdUpdate = new SqlCommand(updateSql, connection))
                 {
                     cmdUpdate.Parameters.AddWithValue("@nuevoEstado", estadoNuevo);
                     cmdUpdate.Parameters.AddWithValue("@idSolicitud", idSolicitud);
+                    cmdUpdate.Parameters.AddWithValue("@idAdmin", idAdmin);
                     cmdUpdate.ExecuteNonQuery();
                 }
 
                 // 2. Registrar la modificación
                 string insertSql = @"
-            INSERT INTO Modificaciones_Solicitud
-            (idSolicitud, idAdministrador, idEstadoAnterior, idEstadoNuevo, fechaModificacion, comentario)
-            VALUES (@idSolicitud, @idAdmin, @estadoAnterior, @estadoNuevo, GETDATE(), @comentario)";
+        INSERT INTO Modificaciones_Solicitud
+        (idSolicitud, idAdministrador, idEstadoAnterior, idEstadoNuevo, fechaModificacion, comentario)
+        VALUES (@idSolicitud, @idAdmin, @estadoAnterior, @estadoNuevo, GETDATE(), @comentario)";
 
                 using (var cmdInsert = new SqlCommand(insertSql, connection))
                 {
@@ -395,6 +416,7 @@ namespace AccesoDatos.Repositories
                 connection.Close();
             }
         }
+
 
         public List<Solicitud> FiltrarSolicitudes(DateTime? fecha, string dni, string nombre, int? idTipo, int? idEstado)
         {

@@ -544,7 +544,9 @@
                                 <i class="fas fa-clock"></i>
                                 Última Modificación
                             </div>
-                            <div class="detalle-value">@d.FechaUltimaModificacion.ToString("dd/MM/yyyy HH:mm")</div>
+                            <div class="detalle-value">
+                                @(d.FechaUltimaModificacion?.ToString("dd/MM/yyyy HH:mm") ?? "Sin modificar")
+                            </div>
                         </div>
                     </div>
 
