@@ -285,7 +285,7 @@ public class MisSolicitudesController : Controller
             //}
 
             // Si la API no funciona, intentar con el repositorio local
-            bool resultado = repo.AnularSolicitud(id, idUsuario);
+            bool resultado = repo.AnularSolicitud(id, idUsuario, solicitud.IdEstado);
             if (resultado)
             {
                 return Json(new { success = true, message = "Solicitud anulada correctamente" });

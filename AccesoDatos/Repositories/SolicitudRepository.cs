@@ -328,13 +328,15 @@ namespace AccesoDatos.Repositories
                 s.detalle AS Descripcion,
                 s.fechaSolicitud,
                 u.DNI,
-               (a.Nombre + ' ' + a.Apellido) AS NombreAsegurado
+               (a.Nombre + ' ' + a.Apellido) AS NombreAsegurado,
+                s.idTipoSolicitud,s.idEstado 
             FROM Solicitudes s
             INNER JOIN Tipos_Solicitud ts ON s.idTipoSolicitud = ts.id
             INNER JOIN Estados_Solicitud es ON s.idEstado = es.id
             INNER JOIN Asegurado a ON s.idAsegurado = a.IdUsuario
             INNER JOIN Usuario u ON a.IdUsuario = u.IdUsuario
-            WHERE s.idAdministrador IS NULL";
+            WHERE s.idAdministrador IS NULL and s.idEstado=1";
+
 
                 SqlCommand command = new SqlCommand(query, connection);
                 connection.Open();
@@ -353,6 +355,8 @@ namespace AccesoDatos.Repositories
                         DNI = reader["DNI"].ToString(),
                         NombreAsegurado = reader["NombreAsegurado"].ToString(),
                         //DocumentoAdjuntoRuta = ""
+                        IdEstado = Convert.ToInt32(reader["idEstado"]),
+                        IdTipoSolicitud = Convert.ToInt32(reader["idTipoSolicitud"])
                     });
                 }
 
@@ -621,50 +625,65 @@ namespace AccesoDatos.Repositories
             return null;
         }
 
-        public bool AnularSolicitud(int id, int idUsuario)
+        public bool AnularSolicitud(int id, int idUsuario, int estadoAnterior)
         {
-            using (SqlConnection connection = new SqlConnection(cadenaConexion))
+            // Validate input parameters
+            if (id <= 0)
+                return false;
+
+            try
             {
-                connection.Open();
-                using (var transaction = connection.BeginTransaction())
+                using (SqlConnection connection = new SqlConnection(cadenaConexion))
                 {
-                    var selectCmd = new SqlCommand("SELECT estado=idEstado FROM Solicitudes where id= @i", connection);
-                    selectCmd.Parameters.AddWithValue("@id", id);
-                    selectCmd.Parameters.AddWithValue("@idUsuario", idUsuario);
-
-                    var estado = selectCmd.ExecuteScalar()?.ToString();
-
-                    if (estado == null)
-                        return false;
-
-                    if (estado == "PENDIENTE" || estado == "OBSERVADA")
+                    connection.Open();
+                    using (var transaction = connection.BeginTransaction())
                     {
+                        try
+                        {
+                            // Update the request status to "cancelled" (6)
+                            var updateCmd = new SqlCommand(
+                                "UPDATE Solicitudes SET idEstado = 6, FechaUltimaModificacion = GETDATE() WHERE Id = @id",
+                                connection, transaction);
+                            updateCmd.Parameters.AddWithValue("@id", id);
 
-                        var updateCmd = new SqlCommand("UPDATE Solicitudes SET idEstado = 6, FechaUltimaModificacion = GETDATE() WHERE Id = @id", connection, transaction);
-                        updateCmd.Parameters.AddWithValue("@id", id);
-                        updateCmd.ExecuteNonQuery();
+                            int rowsAffected = updateCmd.ExecuteNonQuery();
 
-                        var insertCmd = new SqlCommand(@"
+                            
+                            if (rowsAffected == 0)
+                            {
+                                transaction.Rollback();
+                                return false; 
+                            }
+
+                            // Insert modification record
+                            var insertCmd = new SqlCommand(@"
                         INSERT INTO Modificaciones_Solicitud (idSolicitud, idAdministrador, idEstadoAnterior, idEstadoNuevo, fechaModificacion, comentario)
-                        VALUES (@idSolicitud, @idAdministrador, @idEstadoAnterior, @idEstadoNuevo, GETDATE(), @comentario)", connection, transaction);
+                        VALUES (@idSolicitud, @idAdministrador, @idEstadoAnterior, @idEstadoNuevo, GETDATE(), @comentario)",
+                                connection, transaction);
 
-                        insertCmd.Parameters.AddWithValue("@idSolicitud", id);
-                        insertCmd.Parameters.AddWithValue("@idAdministrador", 0);
-                        insertCmd.Parameters.AddWithValue("@idEstadoAnterior", estado);
-                        insertCmd.Parameters.AddWithValue("@idEstadoNuevo", 6);
-                        insertCmd.Parameters.AddWithValue("@comentario", "Anulación realizada por el usuario");
+                            insertCmd.Parameters.AddWithValue("@idSolicitud", id);
+                            insertCmd.Parameters.AddWithValue("@idAdministrador", idUsuario); // Use idUsuario instead of 0
+                            insertCmd.Parameters.AddWithValue("@idEstadoAnterior", estadoAnterior);
+                            insertCmd.Parameters.AddWithValue("@idEstadoNuevo", 6);
+                            insertCmd.Parameters.AddWithValue("@comentario", "Anulación realizada por el usuario");
 
-                        insertCmd.ExecuteNonQuery();
+                            insertCmd.ExecuteNonQuery();
 
-                        transaction.Commit();
-                        return true;
+                            transaction.Commit();
+                            return true;
+                        }
+                        catch
+                        {
+                            transaction.Rollback();
+                            throw; 
+                        }
                     }
-
-                    return false;
                 }
-                    
             }
-            
+            catch (Exception ex)
+            {
+                return false;
+            }
         }
 
 
