@@ -18,7 +18,7 @@ namespace SistemaSolicitudes.ClienteWeb.Controllers
                 string apiUrl = $"http://sisdataperu-003-site1.itempurl.com/prueba2/api/asegurados/{dni}"; 
                 client.DefaultRequestHeaders.Accept.Clear();
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                client.DefaultRequestHeaders.Add("X-Api-Key", "12345ABCDEF"); // Cambia por tu clave real
+                client.DefaultRequestHeaders.Add("X-Api-Key", "12345ABCDEF");
                 HttpResponseMessage response = await client.GetAsync(apiUrl);
                 return response.IsSuccessStatusCode;
             }
@@ -31,7 +31,7 @@ namespace SistemaSolicitudes.ClienteWeb.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult> Index(string DNI, string Codigo, string ConfirmarCodigo)
+        public async Task<ActionResult> Index(string DNI, string Codigo, string ConfirmarCodigo, string Nombre, string Apellido)
         {
             if (string.IsNullOrWhiteSpace(DNI) || DNI.Length < 8 || DNI.Length > 12)
             {
@@ -58,7 +58,7 @@ namespace SistemaSolicitudes.ClienteWeb.Controllers
                 return View();
             }
 
-            if (servicio.RegistrarUsuario(DNI, Codigo))
+            if (servicio.RegistrarUsuario(DNI, Codigo, Nombre, Apellido))
             {
                 TempData["RegistroExitoso"] = "¡Registro exitoso! Ahora puedes iniciar sesión.";
                 return RedirectToAction("Login", "Account");

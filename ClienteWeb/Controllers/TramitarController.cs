@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 using ClienteWeb.Models;
@@ -15,55 +16,86 @@ namespace ClienteWeb.Controllers
 
         public TramitarController()
         {
-            _solicitudService = new SolicitudService();  // Inicializamos el servicio de solicitudes
+            _solicitudService = new SolicitudService();
         }
 
-        // Acción para mostrar el formulario de solicitud
+        // Muestra el formulario
         public ActionResult RegistrarSolicitud()
         {
-            int nuevoEstado = 4;
-            ViewBag.TiposSolicitud = _solicitudService.ObtenerTiposSolicitud();
+            var tipos = _solicitudService.ObtenerTiposSolicitud();
+            ViewBag.TiposSolicitud = new SelectList(tipos, "IdTipoSolicitud", "Nombre");
 
-            var estados = _solicitudService.ObtenerTiposSolicitud();
-            ViewBag.TiposSolicitud = new SelectList(estados, "IdTipoSolicitud", "Nombre");
-
-
-            // Pasamos los tipos de solicitud a la vista
             return View("~/Views/Usuario/Tramitar.cshtml");
         }
 
-        
+        // Procesa el formulario
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult GenerarSolicitud(Entidades.Solicitud solicitud, HttpPostedFileBase DocumentoAdjunto)
+        public ActionResult GenerarSolicitud(Solicitud solicitud, IEnumerable<HttpPostedFileBase> DocumentosAdjuntos)
         {
-            // Verificar si el formulario es válido
             if (!ModelState.IsValid)
             {
-                // Si el formulario no es válido, volver a cargar los tipos de solicitud en la vista
-                var tiposSolicitud = _solicitudService.ObtenerTiposSolicitud();
-                ViewBag.TiposSolicitud = tiposSolicitud;
-                return View("Usuario/RegistrarSolicitud");
+                var tipos = _solicitudService.ObtenerTiposSolicitud();
+                ViewBag.TiposSolicitud = new SelectList(tipos, "IdTipoSolicitud", "Nombre");
+                return View("~/Views/Usuario/Tramitar.cshtml", solicitud);
             }
 
-            // Si se proporciona un documento adjunto, guardarlo
-            if (DocumentoAdjunto != null && DocumentoAdjunto.ContentLength > 0)
-            {
-                var fileName = Path.GetFileName(DocumentoAdjunto.FileName);
-                var filePath = Path.Combine(Server.MapPath("~/App_Data/Uploads"), fileName);
-                DocumentoAdjunto.SaveAs(filePath);
-
-                // Guardar la ruta del archivo en la solicitud
-                solicitud.DocumentoAdjuntoRuta = filePath;
-            }
-
+            // Asigna el usuario actual desde la sesión
             solicitud.IdAsegurado = (int)Session["IdUsuario"];
+
+            // Ruta base para guardar los archivos
+            string rutaBase = Server.MapPath("~/App_Data/Uploads");
+
+            if (!Directory.Exists(rutaBase))
+                Directory.CreateDirectory(rutaBase);
+
+            // Lista de rutas si deseas almacenar varias (ejemplo si usas una entidad ArchivoAdjunto)
+            List<string> rutasGuardadas = new List<string>();
+
+            if (DocumentosAdjuntos != null)
+            {
+                foreach (var archivo in DocumentosAdjuntos)
+                {
+                    if (archivo != null && archivo.ContentLength > 0)
+                    {
+                        string extension = Path.GetExtension(archivo.FileName);
+                        string nombreUnico = Guid.NewGuid().ToString() + extension;
+                        string rutaCompleta = Path.Combine(rutaBase, nombreUnico);
+
+                        archivo.SaveAs(rutaCompleta);
+                        rutasGuardadas.Add(rutaCompleta);
+                    }
+                }
+            }
+
+            solicitud.ArchivosAdjuntos = new List<ArchivoAdjunto>();
+
+            foreach (var archivo in DocumentosAdjuntos)
+            {
+                if (archivo != null && archivo.ContentLength > 0)
+                {
+                    string extension = Path.GetExtension(archivo.FileName);
+                    string nombreUnico = Guid.NewGuid().ToString() + extension;
+                    string ruta = Path.Combine(Server.MapPath("~/App_Data/Uploads"), nombreUnico);
+                    archivo.SaveAs(ruta);
+
+                    solicitud.ArchivosAdjuntos.Add(new ArchivoAdjunto
+                    {
+                        Ruta = ruta,
+                        NombreOriginal = Path.GetFileName(archivo.FileName)
+                    });
+                }
+            }
+
+            //if (rutasGuardadas.Count > 0)
+            //{
+            //    solicitud.DocumentoAdjuntoRuta = rutasGuardadas[0]; // o concatenar rutas si solo tienes una columna
+            //}
+
+            // Guardar solicitud
             _solicitudService.GuardarSolicitud(solicitud);
 
-            // Mensaje de éxito al guardar la solicitud
             TempData["Mensaje"] = "Solicitud registrada exitosamente.";
-
-            // Redirigir a la acción "Index" de "MisSolicitudes"
             return RedirectToAction("Index", "MisSolicitudes");
         }
     }

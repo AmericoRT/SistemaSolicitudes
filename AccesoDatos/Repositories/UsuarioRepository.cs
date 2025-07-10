@@ -59,7 +59,7 @@ namespace AccesoDatos.Repositories
             }
         }
 
-        public bool RegistrarUsuario(string dni, string clave)
+        public bool RegistrarUsuario(string dni, string clave, string nombre, string apellido)
         {
             using (var conexion = new SqlConnection(cadenaConexion))
             {
@@ -67,6 +67,9 @@ namespace AccesoDatos.Repositories
                 cmd.CommandType = CommandType.StoredProcedure;
                 cmd.Parameters.AddWithValue("@DNI", dni);
                 cmd.Parameters.AddWithValue("@Clave", clave);
+                cmd.Parameters.AddWithValue("@Nombre", nombre);
+                cmd.Parameters.AddWithValue("@Apellido", apellido);
+
                 conexion.Open();
                 int rows = cmd.ExecuteNonQuery();
                 return rows > 0;

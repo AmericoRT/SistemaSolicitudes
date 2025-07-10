@@ -62,7 +62,7 @@ namespace SistemaSolicitudes.ClienteWeb.Controllers
                 return RedirectToAction("Login", "Account");
 
             int idAdmin = (int)Session["IdUsuario"];
-            int nuevoEstado = 4; // En revisión
+            int nuevoEstado = 2; // En revisión
 
             // Primero obtener la solicitud para saber el estado anterior
             Solicitud solicitud = await ObtenerSolicitudPorIdAPI(id);

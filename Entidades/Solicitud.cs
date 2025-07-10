@@ -14,7 +14,7 @@ namespace Entidades
         public string Cabecera { get; set; } 
         public string Descripcion { get; set; }
         public DateTime FechaSolicitud { get; set; }
-        public string DocumentoAdjuntoRuta { get; set; }
+        //public string DocumentoAdjuntoRuta { get; set; }
 
         public int IdAsegurado { get; set; }
         public int? IdAdministrador { get; set; }  // nullable
@@ -26,6 +26,8 @@ namespace Entidades
         public string NombreAsegurado { get; set; }
 
         public string Observacion { get; set; }
+
+        public List<ArchivoAdjunto> ArchivosAdjuntos { get; set; } = new List<ArchivoAdjunto>();
     }
 
 }

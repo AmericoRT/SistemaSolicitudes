@@ -142,7 +142,6 @@
 
         .loading i {
             font-size: 24px;
-            /* Eliminado el keyframe spin - ahora usa solo transition */
             transition: transform 0.3s ease;
         }
 
@@ -191,7 +190,7 @@
         padding: 0;
         border-radius: 16px;
         width: 90%;
-        max-width: 800px;
+        max-width: 900px;
         position: relative;
         box-shadow: 0 25px 80px rgba(0, 0, 0, 0.25);
         max-height: 90vh;
@@ -376,7 +375,171 @@
         font-size: 0.95rem;
     }
 
-    /* Eliminados los keyframes y reemplazados con transitions simples */
+    /* Estilos para archivos adjuntos */
+    .archivos-section {
+        background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+        border: 1px solid #e9ecef;
+        border-radius: 12px;
+        padding: 20px;
+        margin-top: 20px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+    }
+
+        .archivos-section:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+    .archivos-title {
+        font-weight: 700;
+        color: #495057;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 1.1rem;
+    }
+
+    .archivos-lista {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 15px;
+    }
+
+    .archivo-item {
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 15px;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+        .archivo-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border-color: #007bff;
+        }
+
+    .archivo-icono {
+        font-size: 24px;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        color: white;
+        font-weight: bold;
+    }
+
+        .archivo-icono.pdf {
+            background: #dc3545;
+        }
+
+        .archivo-icono.doc, .archivo-icono.docx {
+            background: #0d6efd;
+        }
+
+        .archivo-icono.xls, .archivo-icono.xlsx {
+            background: #198754;
+        }
+
+        .archivo-icono.jpg, .archivo-icono.jpeg, .archivo-icono.png, .archivo-icono.gif {
+            background: #fd7e14;
+        }
+
+        .archivo-icono.default {
+            background: #6c757d;
+        }
+
+    .archivo-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .archivo-nombre {
+        font-weight: 600;
+        color: #212529;
+        margin-bottom: 4px;
+        word-wrap: break-word;
+        font-size: 0.95rem;
+    }
+
+    .archivo-detalles {
+        font-size: 0.85rem;
+        color: #6c757d;
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .archivo-acciones {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+
+    .btn-descargar {
+        background: #28a745;
+        color: white;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.3s ease;
+        text-decoration: none;
+    }
+
+        .btn-descargar:hover {
+            background: #218838;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 6px rgba(40, 167, 69, 0.3);
+            color: white;
+            text-decoration: none;
+        }
+
+    .btn-ver {
+        background: #007bff;
+        color: white;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.3s ease;
+        text-decoration: none;
+    }
+
+        .btn-ver:hover {
+            background: #0056b3;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 6px rgba(0, 123, 255, 0.3);
+            color: white;
+            text-decoration: none;
+        }
+
+    .sin-archivos {
+        text-align: center;
+        color: #6c757d;
+        font-style: italic;
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        border: 2px dashed #dee2e6;
+    }
+
     .fade-in {
         opacity: 0;
         transition: opacity 0.3s ease-in-out;
@@ -566,6 +729,77 @@
                                 Observaciones
                             </div>
                             <div class="observacion-text">@d.Observacion</div>
+                        </div>
+                    }
+
+                    <!-- Sección de archivos adjuntos -->
+                    @if (d.ArchivosAdjuntos != null && d.ArchivosAdjuntos.Count > 0)
+                    {
+                        <div class="archivos-section">
+                            <div class="archivos-title">
+                                <i class="fas fa-paperclip"></i>
+                                Archivos Adjuntos (@d.ArchivosAdjuntos.Count)
+                            </div>
+                            <div class="archivos-lista">
+                                @foreach (var archivo in d.ArchivosAdjuntos)
+                                {
+                                    var extension = System.IO.Path.GetExtension(archivo.NombreOriginal).ToLower().TrimStart('.');
+                                    <div class="archivo-item">
+                                        <div class="archivo-icono @extension">
+                                            @if (extension == "pdf")
+                                            {
+                                                <i class="fas fa-file-pdf"></i>
+                                            }
+                                            else if (extension == "doc" || extension == "docx")
+                                            {
+                                                <i class="fas fa-file-word"></i>
+                                            }
+                                            else if (extension == "xls" || extension == "xlsx")
+                                            {
+                                                <i class="fas fa-file-excel"></i>
+                                            }
+                                            else if (extension == "jpg" || extension == "jpeg" || extension == "png" || extension == "gif")
+                                            {
+                                                <i class="fas fa-file-image"></i>
+                                            }
+                                            else
+                                            {
+                                                <i class="fas fa-file"></i>
+                                            }
+                                        </div>
+                                        <div class="archivo-info">
+                                            <div class="archivo-nombre">@archivo.NombreOriginal</div>
+                                            
+                                        </div>
+                                        <div class="archivo-acciones">
+                                            <a href="@Url.Action("DescargarArchivo", "MisSolicitudes", new { id = archivo.Id })"
+                                               class="btn-descargar" title="Descargar archivo">
+                                                <i class="fas fa-download"></i>
+                                            </a>
+                                            @if (extension == "pdf" || extension == "jpg" || extension == "jpeg" || extension == "png" || extension == "gif")
+                                            {
+                                                <a href="@Url.Action("VerArchivo", "MisSolicitudes", new { id = archivo.Id })"
+                                                   class="btn-ver" title="Ver archivo" target="_blank">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="archivos-section">
+                            <div class="archivos-title">
+                                <i class="fas fa-paperclip"></i>
+                                Archivos Adjuntos
+                            </div>
+                            <div class="sin-archivos">
+                                <i class="fas fa-inbox fa-2x mb-2"></i>
+                                <p>No hay archivos adjuntos en esta solicitud</p>
+                            </div>
                         </div>
                     }
 

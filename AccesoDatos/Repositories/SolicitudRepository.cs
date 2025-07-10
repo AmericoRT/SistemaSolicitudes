@@ -46,23 +46,52 @@ namespace AccesoDatos.Repositories
 
         public void GuardarSolicitud(Solicitud solicitud)
         {
-            using (SqlConnection connection = new SqlConnection(cadenaConexion))
+            //string cadenaConexion = ConfigurationManager.ConnectionStrings["TuCadena"].ConnectionString;
+
+            using (SqlConnection conexion = new SqlConnection(cadenaConexion))
             {
-                SqlCommand command = new SqlCommand("InsertarSolicitud", connection);
-                command.CommandType = CommandType.StoredProcedure;
+                conexion.Open();
+                SqlTransaction transaccion = conexion.BeginTransaction();
 
-                command.Parameters.AddWithValue("@idAsegurado", solicitud.IdAsegurado);
-                command.Parameters.AddWithValue("@idAdministrador", DBNull.Value);
-                command.Parameters.AddWithValue("@idEstado", 1);
-                command.Parameters.AddWithValue("@idTipoSolicitud", solicitud.IdTipoSolicitud);
-                command.Parameters.AddWithValue("@cabecera", solicitud.Cabecera ?? "");
-                command.Parameters.AddWithValue("@detalle", solicitud.Descripcion ?? "");
+                try
+                {
+                    SqlCommand cmd = new SqlCommand("InsertarSolicitud", conexion, transaccion);
+                    cmd.CommandType = CommandType.StoredProcedure;
 
-                connection.Open();
-                command.ExecuteNonQuery();
-                connection.Close();
+                    cmd.Parameters.AddWithValue("@idAsegurado", solicitud.IdAsegurado);
+                    cmd.Parameters.AddWithValue("@idAdministrador", (object)solicitud.IdAdministrador ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@idEstado", 1);
+                    cmd.Parameters.AddWithValue("@idTipoSolicitud", solicitud.IdTipoSolicitud);
+                    cmd.Parameters.AddWithValue("@cabecera", solicitud.Cabecera);
+                    cmd.Parameters.AddWithValue("@detalle", solicitud.Descripcion);
+
+                    int idSolicitud = Convert.ToInt32(cmd.ExecuteScalar());
+                    if (solicitud.ArchivosAdjuntos != null)
+                    {
+                        foreach (var archivo in solicitud.ArchivosAdjuntos)
+                        {
+                            SqlCommand cmdArchivo = new SqlCommand(@"
+                        INSERT INTO Archivos_Adjuntos (IdSolicitud, archivo_Ruta, archivo_nombre,fecha_subida)
+                        VALUES (@IdSolicitud, @Ruta, @NombreOriginal,getDate())", conexion, transaccion);
+
+                            cmdArchivo.Parameters.AddWithValue("@IdSolicitud", idSolicitud);
+                            cmdArchivo.Parameters.AddWithValue("@Ruta", archivo.Ruta);
+                            cmdArchivo.Parameters.AddWithValue("@NombreOriginal", archivo.NombreOriginal);
+
+                            cmdArchivo.ExecuteNonQuery();
+                        }
+                    }
+
+                    transaccion.Commit();
+                }
+                catch (Exception ex)
+                {
+                    transaccion.Rollback();
+                    throw new Exception("Error al guardar la solicitud: " + ex.Message);
+                }
             }
         }
+
 
         public List<Solicitud> ObtenerSolicitudesPorUsuario(int idUsuario)
         {
@@ -100,6 +129,34 @@ namespace AccesoDatos.Repositories
 
             return lista;
         }
+
+        public List<ArchivoAdjunto> ObtenerArchivosPorSolicitud(int idSolicitud)
+        {
+            var lista = new List<ArchivoAdjunto>();
+           
+            using (SqlConnection conexion = new SqlConnection(cadenaConexion))
+            {
+                conexion.Open();
+                SqlCommand cmd = new SqlCommand("SELECT Id, archivo_ruta, archivo_nombre FROM archivos_adjuntos WHERE IdSolicitud = @IdSolicitud", conexion);
+                cmd.Parameters.AddWithValue("@IdSolicitud", idSolicitud);
+
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        lista.Add(new ArchivoAdjunto
+                        {
+                            Id = Convert.ToInt32(reader["Id"]),
+                            Ruta = reader["archivo_ruta"].ToString(),
+                            NombreOriginal = reader["archivo_nombre"].ToString()
+                        });
+                    }
+                }
+            }
+
+            return lista;
+        }
+
 
         public List<Solicitud> ObtenerSolicitudesPorUsuarioYFechas(int idUsuario, DateTime fechaInicio, DateTime fechaFin)
         {
@@ -216,11 +273,12 @@ namespace AccesoDatos.Repositories
                 s.detalle AS Descripcion,
                 s.fechaSolicitud,
                 u.DNI,
-                (a.Nombre + ' ' + a.Apellido) AS NombreAsegurado
+                (a.Nombre + ' ' + a.Apellido) AS NombreAsegurado,
+                s.idTipoSolicitud,s.idEstado 
             FROM Solicitudes s
             INNER JOIN Tipos_Solicitud ts ON s.idTipoSolicitud = ts.id
             INNER JOIN Estados_Solicitud es ON s.idEstado = es.id
-            INNER JOIN Asegurado a ON s.idAsegurado = a.IdAsegurado
+            INNER JOIN Asegurado a ON s.idAsegurado = a.IdUsuario
             INNER JOIN Usuario u ON a.IdUsuario = u.IdUsuario
             WHERE s.idAdministrador = @idAdmin
                 ";
@@ -243,7 +301,9 @@ namespace AccesoDatos.Repositories
                         Cabecera = reader["cabecera"].ToString(),
                         Descripcion = reader["Descripcion"].ToString(),
                         FechaSolicitud = Convert.ToDateTime(reader["fechaSolicitud"]),
-                        DocumentoAdjuntoRuta = ""
+                        //DocumentoAdjuntoRuta = "",
+                        IdEstado= Convert.ToInt32(reader["idEstado"]),
+                        IdTipoSolicitud = Convert.ToInt32(reader["idTipoSolicitud"])
                     });
                 }
 
@@ -272,7 +332,7 @@ namespace AccesoDatos.Repositories
             FROM Solicitudes s
             INNER JOIN Tipos_Solicitud ts ON s.idTipoSolicitud = ts.id
             INNER JOIN Estados_Solicitud es ON s.idEstado = es.id
-            INNER JOIN Asegurado a ON s.idAsegurado = a.IdAsegurado
+            INNER JOIN Asegurado a ON s.idAsegurado = a.IdUsuario
             INNER JOIN Usuario u ON a.IdUsuario = u.IdUsuario
             WHERE s.idAdministrador IS NULL";
 
@@ -292,7 +352,7 @@ namespace AccesoDatos.Repositories
                         FechaSolicitud = Convert.ToDateTime(reader["fechaSolicitud"]),
                         DNI = reader["DNI"].ToString(),
                         NombreAsegurado = reader["NombreAsegurado"].ToString(),
-                        DocumentoAdjuntoRuta = ""
+                        //DocumentoAdjuntoRuta = ""
                     });
                 }
 
@@ -429,7 +489,7 @@ namespace AccesoDatos.Repositories
                    ts.nombre_tipo, es.estado_nombre,
                    u.DNI, CONCAT(a.nombre, ' ', a.apellido) AS NombreAsegurado
             FROM Solicitudes s
-            INNER JOIN Asegurado a ON s.idAsegurado = a.idAsegurado
+            INNER JOIN Asegurado a ON s.idAsegurado = a.IdUsuario
             INNER JOIN Usuario u ON a.idUsuario = u.idUsuario
             INNER JOIN Tipos_Solicitud ts ON s.idTipoSolicitud = ts.id
             INNER JOIN Estados_Solicitud es ON s.idEstado = es.id
@@ -488,7 +548,7 @@ namespace AccesoDatos.Repositories
                    ts.nombre_tipo, es.estado_nombre,
                    u.DNI, CONCAT(a.nombre, ' ', a.apellido) AS NombreAsegurado
             FROM Solicitudes s
-            INNER JOIN Asegurado a ON s.idAsegurado = a.idAsegurado
+            INNER JOIN Asegurado a ON s.idAsegurado = a.IdUsuario
             INNER JOIN Usuario u ON a.idUsuario = u.idUsuario
             INNER JOIN Tipos_Solicitud ts ON s.idTipoSolicitud = ts.id
             INNER JOIN Estados_Solicitud es ON s.idEstado = es.id
@@ -536,6 +596,76 @@ namespace AccesoDatos.Repositories
             return lista;
         }
 
+        public ArchivoAdjunto ObtenerArchivoPorId(int id)
+        {
+            using (SqlConnection connection = new SqlConnection(cadenaConexion))
+            {
+                connection.Open();
+                var command = new SqlCommand("SELECT IdSolicitud, archivo_Ruta, archivo_nombre,fecha_subida FROM Archivos_Adjuntos WHERE Id = @id", connection);
+                command.Parameters.AddWithValue("@id", id);
+
+                using (var reader = command.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+                        return new ArchivoAdjunto
+                        {
+                            Id = id,
+                            NombreOriginal = reader["archivo_nombre"].ToString(),
+                            IdSolicitud = (int)reader["IdSolicitud"],
+                            Ruta = reader["archivo_Ruta"].ToString(),
+                        };
+                    }
+                }
+            }
+            return null;
+        }
+
+        public bool AnularSolicitud(int id, int idUsuario)
+        {
+            using (SqlConnection connection = new SqlConnection(cadenaConexion))
+            {
+                connection.Open();
+                using (var transaction = connection.BeginTransaction())
+                {
+                    var selectCmd = new SqlCommand("SELECT estado=idEstado FROM Solicitudes where id= @i", connection);
+                    selectCmd.Parameters.AddWithValue("@id", id);
+                    selectCmd.Parameters.AddWithValue("@idUsuario", idUsuario);
+
+                    var estado = selectCmd.ExecuteScalar()?.ToString();
+
+                    if (estado == null)
+                        return false;
+
+                    if (estado == "PENDIENTE" || estado == "OBSERVADA")
+                    {
+
+                        var updateCmd = new SqlCommand("UPDATE Solicitudes SET idEstado = 6, FechaUltimaModificacion = GETDATE() WHERE Id = @id", connection, transaction);
+                        updateCmd.Parameters.AddWithValue("@id", id);
+                        updateCmd.ExecuteNonQuery();
+
+                        var insertCmd = new SqlCommand(@"
+                        INSERT INTO Modificaciones_Solicitud (idSolicitud, idAdministrador, idEstadoAnterior, idEstadoNuevo, fechaModificacion, comentario)
+                        VALUES (@idSolicitud, @idAdministrador, @idEstadoAnterior, @idEstadoNuevo, GETDATE(), @comentario)", connection, transaction);
+
+                        insertCmd.Parameters.AddWithValue("@idSolicitud", id);
+                        insertCmd.Parameters.AddWithValue("@idAdministrador", 0);
+                        insertCmd.Parameters.AddWithValue("@idEstadoAnterior", estado);
+                        insertCmd.Parameters.AddWithValue("@idEstadoNuevo", 6);
+                        insertCmd.Parameters.AddWithValue("@comentario", "Anulación realizada por el usuario");
+
+                        insertCmd.ExecuteNonQuery();
+
+                        transaction.Commit();
+                        return true;
+                    }
+
+                    return false;
+                }
+                    
+            }
+            
+        }
 
 
 

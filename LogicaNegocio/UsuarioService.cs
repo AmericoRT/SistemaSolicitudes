@@ -24,9 +24,9 @@ namespace LogicaNegocio
         }
 
         // Registrar un usuario
-        public bool RegistrarUsuario(string dni, string clave)
+        public bool RegistrarUsuario(string dni, string clave, string nombre, string apellido)
         {
-            return repo.RegistrarUsuario(dni, clave);
+            return repo.RegistrarUsuario(dni, clave,nombre,apellido);
         }
 
     }
