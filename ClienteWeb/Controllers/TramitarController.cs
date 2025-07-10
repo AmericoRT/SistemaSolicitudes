@@ -31,7 +31,7 @@ namespace ClienteWeb.Controllers
         // Procesa el formulario
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult GenerarSolicitud(Solicitud solicitud, IEnumerable<HttpPostedFileBase> DocumentosAdjuntos)
+        public ActionResult GenerarSolicitud(Solicitud solicitud,  IEnumerable<HttpPostedFileBase> DocumentosAdjuntos)
         {
             if (!ModelState.IsValid)
             {

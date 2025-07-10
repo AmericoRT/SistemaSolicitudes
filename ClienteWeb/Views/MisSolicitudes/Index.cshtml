@@ -696,8 +696,166 @@
         <p class="text-gray-500">No se encontraron solicitudes con los filtros aplicados.</p>
     }
 
-    <!-- Aquí puede seguir tu modal de detalle y los scripts si ya los tienes -->
+    @if (ViewBag.DetalleSolicitud != null)
+    {
+        var d = (Entidades.Solicitud)ViewBag.DetalleSolicitud;
+        <div class="modal show" id="modalDetalle">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title">
+                        <i class="fas fa-file-alt"></i>
+                        Detalle de Solicitud
+                    </h2>
+                    <a href="@Url.Action("Index", "MisSolicitudes")" class="close-button">&times;</a>
+                </div>
+
+                <div class="modal-body">
+                    <div class="detalle-grid">
+                        <div class="detalle-item">
+                            <div class="detalle-label">
+                                <i class="fas fa-heading"></i>
+                                Cabecera
+                            </div>
+                            <div class="detalle-value">@d.Cabecera</div>
+                        </div>
+
+                        <div class="detalle-item">
+                            <div class="detalle-label">
+                                <i class="fas fa-calendar-alt"></i>
+                                Fecha Solicitud
+                            </div>
+                            <div class="detalle-value">@d.FechaSolicitud.ToString("dd/MM/yyyy")</div>
+                        </div>
+
+                        <div class="detalle-item">
+                            <div class="detalle-label">
+                                <i class="fas fa-info-circle"></i>
+                                Estado
+                            </div>
+                            <div class="detalle-value">
+                                <span class="estado-badge
+                                @if(d.EstadoSolicitud == "Pendiente") {<text>estado-pendiente</text>}
+                                @if(d.EstadoSolicitud == "Aprobado") {<text>estado-aprobado</text>}
+                                @if(d.EstadoSolicitud == "Rechazado") {<text>estado-rechazado</text>}
+                                @if(d.EstadoSolicitud == "Anulado") {<text>estado-anulado</text>}
+                            ">
+                                    @d.EstadoSolicitud
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="detalle-item">
+                            <div class="detalle-label">
+                                <i class="fas fa-clock"></i>
+                                Última Modificación
+                            </div>
+                            <div class="detalle-value">
+                                @(d.FechaUltimaModificacion?.ToString("dd/MM/yyyy HH:mm") ?? "Sin modificar")
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="detalle-item full-width">
+                        <div class="detalle-label">
+                            <i class="fas fa-align-left"></i>
+                            Descripción
+                        </div>
+                        <div class="detalle-value">@d.Descripcion</div>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(d.Observacion))
+                    {
+                        <div class="observacion-section">
+                            <div class="observacion-title">
+                                <i class="fas fa-comment-alt"></i>
+                                Observaciones
+                            </div>
+                            <div class="observacion-text">@d.Observacion</div>
+                        </div>
+                    }
+
+                    @if (d.ArchivosAdjuntos != null && d.ArchivosAdjuntos.Count > 0)
+                    {
+                        <div class="archivos-section">
+                            <div class="archivos-title">
+                                <i class="fas fa-paperclip"></i>
+                                Archivos Adjuntos (@d.ArchivosAdjuntos.Count)
+                            </div>
+                            <div class="archivos-lista">
+                                @foreach (var archivo in d.ArchivosAdjuntos)
+                                {
+                                    var extension = System.IO.Path.GetExtension(archivo.NombreOriginal).ToLower().TrimStart('.');
+                                    <div class="archivo-item">
+                                        <div class="archivo-icono @extension">
+                                            @if (extension == "pdf")
+                                            {
+                                                <i class="fas fa-file-pdf"></i>
+                                            }
+                                            else if (extension == "doc" || extension == "docx")
+                                            {
+                                                <i class="fas fa-file-word"></i>
+                                            }
+                                            else if (extension == "xls" || extension == "xlsx")
+                                            {
+                                                <i class="fas fa-file-excel"></i>
+                                            }
+                                            else if (extension == "jpg" || extension == "jpeg" || extension == "png" || extension == "gif")
+                                            {
+                                                <i class="fas fa-file-image"></i>
+                                            }
+                                            else
+                                            {
+                                                <i class="fas fa-file"></i>
+                                            }
+                                        </div>
+                                        <div class="archivo-info">
+                                            <div class="archivo-nombre">@archivo.NombreOriginal</div>
+                                        </div>
+                                        <div class="archivo-acciones">
+                                            <a href="@Url.Action("DescargarArchivo", "MisSolicitudes", new { id = archivo.Id })"
+                                               class="btn-descargar" title="Descargar archivo">
+                                                <i class="fas fa-download"></i>
+                                            </a>
+                                            @if (extension == "pdf" || extension == "jpg" || extension == "jpeg" || extension == "png" || extension == "gif")
+                                            {
+                                                <a href="@Url.Action("VerArchivo", "MisSolicitudes", new { id = archivo.Id })"
+                                                   class="btn-ver" title="Ver archivo" target="_blank">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="archivos-section">
+                            <div class="archivos-title">
+                                <i class="fas fa-paperclip"></i>
+                                Archivos Adjuntos
+                            </div>
+                            <div class="sin-archivos">
+                                <i class="fas fa-inbox fa-2x mb-2"></i>
+                                <p>No hay archivos adjuntos en esta solicitud</p>
+                            </div>
+                        </div>
+                    }
+
+                    <div class="modal-footer">
+                        <a href="@Url.Action("Index", "MisSolicitudes")" class="btn-secondary">
+                            <i class="fas fa-arrow-left"></i>
+                            Volver
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
 </div>
+
+
 
 <!-- Scripts -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

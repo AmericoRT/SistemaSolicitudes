@@ -76,9 +76,63 @@ namespace AccesoDatos.Repositories
             }
         }
 
+        public Usuario ObtenerPorUsuario(string usuario)
+        {
+            using (var conn = new SqlConnection(cadenaConexion))
+            {
+                conn.Open();
+                var cmd = new SqlCommand("SELECT * FROM Usuario u inner join rol r on u.idRol=r.idRol WHERE DNI = @usuario ", conn);
+                cmd.Parameters.AddWithValue("@usuario", usuario);
+                var reader = cmd.ExecuteReader();
+                if (reader.Read())
+                {
+                    return new Usuario
+                    {
+                        Id = (int)reader["IdUsuario"],
+                        NombreUsuario = reader["DNI"].ToString(),
+                        Clave = reader["Clave"].ToString(),
+                        Rol = reader["DesRol"].ToString()
+                    };
+                }
+                return null;
+            }
+        }
 
+        public void ActualizarClaveHasheada(int id, string nuevaClave)
+        {
+            using (var conn = new SqlConnection(cadenaConexion))
+            {
+                conn.Open();
+                var cmd = new SqlCommand("UPDATE Usuario SET Clave = @clave WHERE IdUsuario = @id", conn);
+                cmd.Parameters.AddWithValue("@clave", nuevaClave);
+                cmd.Parameters.AddWithValue("@id", id);
+                cmd.ExecuteNonQuery();
+            }
+        }
 
+        public List<Usuario> ObtenerTodos()
+        {
+            List<Usuario> lista = new List<Usuario>();
 
+            using (SqlConnection conn = new SqlConnection(cadenaConexion))
+            using (SqlCommand cmd = new SqlCommand("SELECT * FROM Usuario u inner join rol r on u.idRol=r.idRol", conn))
+            {
+                conn.Open();
+                SqlDataReader reader = cmd.ExecuteReader();
+                while (reader.Read())
+                {
+                    lista.Add(new Usuario
+                    {
+                        Id = (int)reader["IdUsuario"],
+                        NombreUsuario = reader["DNI"].ToString(),
+                        Clave = reader["Clave"].ToString(),
+                        Rol = reader["DesRol"].ToString()
+                    });
+                }
+            }
+
+            return lista;
+        }
 
     }
 }
